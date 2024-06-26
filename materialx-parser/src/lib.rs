@@ -1,0 +1,226 @@
+#![allow(clippy::large_enum_variant)]
+
+use serde::{de::Error as _, Deserialize};
+use std::str::FromStr;
+
+pub use input::{ConversionError, Input};
+pub use typed_input::{DataType, DataTypeAndValue, ValueParseError};
+
+mod input;
+mod nodes;
+mod typed_input;
+
+/// MaterialX document
+///
+/// # Specification
+///
+/// see [MTLX File Format Definition](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.Specification.md#mtlx-file-format-definition)
+#[derive(Debug, Deserialize)]
+pub struct MaterialX {
+    /// A string containing the version number of the MaterialX specification
+    /// that this document conforms to, specified as a major and minor number
+    /// separated by a dot.
+    #[serde(rename = "@version")]
+    pub version: Version,
+    /// The name of the "working color space" for this element and all of its
+    /// descendants. This is the default color space for all image inputs and
+    /// color values, and the color space in which all color computations will
+    /// be performed. The default is "none", for no color management.
+    #[serde(rename = "@colorspace")]
+    pub color_space: Option<ColorSpace>,
+    /// Defines the namespace for all elements defined within this `<materialx>`
+    /// scope.
+    #[serde(rename = "@namespace")]
+    pub namespace: Option<String>,
+    #[serde(rename = "$value")]
+    pub materials: Vec<TopLevel>,
+}
+
+#[derive(Debug, Clone, thiserror::Error)]
+#[non_exhaustive]
+pub enum Error {
+    #[error("Failed to parse XML {0}")]
+    Xml(#[from] serde_path_to_error::Error<quick_xml::DeError>),
+}
+
+impl FromStr for MaterialX {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut deserializer = quick_xml::de::Deserializer::from_str(s);
+        let res: Result<MaterialX, _> = serde_path_to_error::deserialize(&mut deserializer);
+        Ok(res?)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Metadata {
+    #[serde(rename = "@name")]
+    pub name: String,
+    #[serde(rename = "@type")]
+    pub r#type: DataType,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Version {
+    pub major: u8,
+    pub minor: u8,
+}
+
+impl<'a> serde::Deserialize<'a> for Version {
+    fn deserialize<D>(deserializer: D) -> Result<Version, D::Error>
+    where
+        D: serde::Deserializer<'a>,
+    {
+        use serde::de::Error;
+
+        let s = String::deserialize(deserializer)?;
+        let mut iter = s.split('.');
+        Ok(Version {
+            major: iter
+                .next()
+                .ok_or_else(|| Error::missing_field("major version"))?
+                .parse()
+                .map_err(|e| Error::custom(format!("Invalid major version: {}", e)))?,
+            minor: iter
+                .next()
+                .ok_or(Error::missing_field("minor version"))?
+                .parse()
+                .map_err(|e| Error::custom(format!("Invalid minor version: {}", e)))?,
+        })
+    }
+}
+
+#[derive(Debug)]
+pub enum ColorSpace {
+    SrgbTexture,
+    LinRec709,
+    G22Rec709,
+    G18Rec709,
+    AcesCG,
+    /// alias for "acescg"
+    LinAp1,
+    G22Ap1,
+    G18Ap1,
+    LinSrgb,
+    AdobeRGB,
+    LinAdobeRGB,
+    SrgbDisplayP3,
+    LinDisplayP3,
+    /// Any other color space is treated as unknown
+    Unknown(String),
+}
+
+impl FromStr for ColorSpace {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<ColorSpace, &'static str> {
+        match s {
+            "srgb_texture" => Ok(ColorSpace::SrgbTexture),
+            "lin_rec709" => Ok(ColorSpace::LinRec709),
+            "g22_rec709" => Ok(ColorSpace::G22Rec709),
+            "g18_rec709" => Ok(ColorSpace::G18Rec709),
+            "acescg" => Ok(ColorSpace::AcesCG),
+            "lin_ap1" => Ok(ColorSpace::LinAp1),
+            "g22_ap1" => Ok(ColorSpace::G22Ap1),
+            "g18_ap1" => Ok(ColorSpace::G18Ap1),
+            "lin_srgb" => Ok(ColorSpace::LinSrgb),
+            "adobergb" => Ok(ColorSpace::AdobeRGB),
+            "lin_adobergb" => Ok(ColorSpace::LinAdobeRGB),
+            "srgb_displayp3" => Ok(ColorSpace::SrgbDisplayP3),
+            "lin_displayp3" => Ok(ColorSpace::LinDisplayP3),
+            s => Ok(ColorSpace::Unknown(s.into())),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ColorSpace {
+    fn deserialize<D>(deserializer: D) -> Result<ColorSpace, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        ColorSpace::from_str(&s).map_err(D::Error::custom)
+    }
+}
+
+/// Top level nodes
+#[derive(Debug, Deserialize)]
+pub enum TopLevel {
+    #[serde(rename = "surfacematerial")]
+    SurfaceMaterial {
+        #[serde(rename = "@name")]
+        name: String,
+        // type: "material"
+        input: Input,
+    },
+    #[serde(rename = "nodegraph")]
+    NodeGraph {
+        #[serde(rename = "@name")]
+        name: String,
+        // type: "material"
+        #[serde(default)]
+        input: Vec<Input>,
+        // TODO: hashmap with custom deserializer to collect nodes by `@name`
+        #[serde(rename = "$value", default)]
+        nodes: Vec<nodes::Node>,
+        output: Vec<Output>,
+    },
+    #[serde(rename = "standard_surface")]
+    StandardSurface {
+        #[serde(rename = "@name")]
+        name: String,
+        // type: "surfaceshader"
+        input: Vec<Input>,
+    },
+    #[serde(other)]
+    Other,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Output {
+    #[serde(rename = "@name")]
+    pub name: String,
+    #[serde(rename = "@type")]
+    pub r#type: DataType,
+    #[serde(rename = "@nodename")]
+    pub nodename: Option<String>,
+    #[serde(rename = "@uniform")]
+    pub uniform: Option<bool>,
+    #[serde(rename = "@output")]
+    pub output: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn jade() {
+        let xml =
+            include_str!("../../resources/examples/StandardSurface/standard_surface_jade.mtlx");
+        println!("{:?}", MaterialX::from_str(xml).unwrap());
+    }
+
+    // tries to parse all mtlx files in the examples folder
+    #[test]
+    fn all() {
+        let examples = std::fs::read_dir("../resources/examples/StandardSurface").unwrap();
+        for example in examples {
+            let example = example.unwrap();
+            let path = example.path();
+            if path.is_dir() {
+                continue;
+            }
+            if path.extension().unwrap() == "mtlx" {
+                let name = path.file_name().unwrap().to_str().unwrap().to_string();
+                let xml = std::fs::read_to_string(&path).unwrap();
+
+                match MaterialX::from_str(&xml) {
+                    Ok(_) => println!("{name}: Success"),
+                    Err(e) => eprintln!("{name}: Failed {e}"),
+                }
+            }
+        }
+    }
+}
