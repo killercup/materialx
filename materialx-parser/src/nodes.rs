@@ -1,28 +1,27 @@
 //! Node definitions
-//!
-//!
-//! TODO: Refactor node definitions to use a macro and well-typed inputs
-//!
-//! E.g. given this description
-//! > add: add a value to the incoming float/color/vector/matrix, or, add one
-//! > integer value to another.
-//! > - in1 (float or colorN or vectorN or matrixNN, or integer): the value or
-//! >   nodename for the primary input; for matrix types, the default is the
-//! >   zero matrix.
-//! > - in2 (same type as in1 or float, or integer): the value or nodename to
-//! >   add; for matrix types, the default is the zero matrix.
-//!
-//! we should translate it to something like
-//! ```rust
-//! node!(Add,
-//!     "add a value to the incoming float/color/vector/matrix, or, add one integer value to another",
-//!     in1: (Float | Color | Vector | Matrix | Integer),
-//!     in2: (Float | Color | Vector | Matrix | Integer)
-//! );
-//! ```
-//!
-//! and maybe also group it nicely in modules to then have one index enum/macro
-//! to collect all the nodes.
+
+// TODO: Refactor node definitions to use a macro and well-typed inputs
+//
+// E.g. given this description
+// > add: add a value to the incoming float/color/vector/matrix, or, add one
+// > integer value to another.
+// > - in1 (float or colorN or vectorN or matrixNN, or integer): the value or
+// >   nodename for the primary input; for matrix types, the default is the
+// >   zero matrix.
+// > - in2 (same type as in1 or float, or integer): the value or nodename to
+// >   add; for matrix types, the default is the zero matrix.
+//
+// we should translate it to something like
+// ```rust,ignore
+// node!(Add,
+//     "add a value to the incoming float/color/vector/matrix, or, add one integer value to another",
+//     in1: (Float | Color | Vector | Matrix | Integer),
+//     in2: (Float | Color | Vector | Matrix | Integer)
+// );
+// ```
+//
+// and maybe also group it nicely in modules to then have one index enum/macro
+// to collect all the nodes.
 
 use serde::Deserialize;
 
