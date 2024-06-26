@@ -1,0 +1,16 @@
+[package]
+name = "bevy-materialx-importer"
+version = "0.1.0"
+edition = "2021"
+authors = [
+    "Pascal Hertleif <killercup@gmail.com>"
+]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+bevy_pbr = "0.14.0-rc.3"
+materialx-parser = { version = "0.1.0", path = "../materialx-parser" }
+thiserror = "1.0.61"
+
+[dev-dependencies]
+bevy = "0.14.0-rc.3"
