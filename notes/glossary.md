@@ -15,6 +15,10 @@ In MaterialX, a look is a collection of geometries and their materials (which in
 **Shader**:
 A program that runs on the GPU and is used to calculate the color of a pixel.
 
+**Ubershader**:
+A big shader that can be compiled with many different flags and/or variable substitutions.
+[History](https://dolphin-emu.org/blog/2017/07/30/ubershaders/)
+
 **Spatially-varying data**:
 For example, color, vector, or scalar data that varies across a surface.
 Pretty much a fancy way of saying "data that changes depending on where you are"
