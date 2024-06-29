@@ -1,0 +1,12 @@
+[package]
+name = "matlib-downloader"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+fs-err = { version = "2.11.0", features = ["io_safety"] }
+reqwest = { version = "0.12.5", features = ["rustls-tls", "json", "blocking"] }
+serde = { version = "1.0.203", features = ["derive"] }
+url = "2.5.2"
+zip = "2.1.3"
