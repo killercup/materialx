@@ -48,9 +48,9 @@ pub enum Node {
     Sin(Sin),
     Cos(Cos),
     Tan(Tan),
-    ASin(ASin),
-    ACos(ACos),
-    ATan2(ATan2),
+    Asin(Asin),
+    Acos(Acos),
+    Atan2(Atan2),
     Sqrt(Sqrt),
     Ln(Ln),
     Exp(Exp),
@@ -205,7 +205,7 @@ pub struct Tan {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub struct ASin {
+pub struct Asin {
     #[serde(flatten)]
     pub meta: Metadata,
     pub input: Input,
@@ -213,7 +213,7 @@ pub struct ASin {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub struct ACos {
+pub struct Acos {
     #[serde(flatten)]
     pub meta: Metadata,
     pub input: Input,
@@ -221,7 +221,7 @@ pub struct ACos {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub struct ATan2 {
+pub struct Atan2 {
     #[serde(flatten)]
     pub meta: Metadata,
     pub input: (Input, Input),
