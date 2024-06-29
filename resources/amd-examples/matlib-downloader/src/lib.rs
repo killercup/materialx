@@ -84,6 +84,7 @@ struct Response<T> {
     results: Vec<T>,
 }
 
+#[allow(unused)] // some fields only for debugging
 #[derive(Debug, Deserialize)]
 struct Material {
     id: String,
