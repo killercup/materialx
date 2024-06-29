@@ -19,7 +19,7 @@ fn camera_setup(mut commands: Commands) {
     });
 
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-5., 5., 9.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-5., 10., 9.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
 }
@@ -72,22 +72,20 @@ fn spawn_balls(
 
 fn example_files() -> Vec<(String, StandardMaterial)> {
     let mut res = Vec::new();
-    let examples = std::fs::read_dir("../resources/examples/StandardSurface").unwrap();
+
+    let examples = glob::glob("resources/**/*.mtlx").unwrap();
     for example in examples {
-        let example = example.unwrap();
-        let path = example.path();
+        let path = example.unwrap();
         if path.is_dir() {
             continue;
         }
-        if path.extension().unwrap() == "mtlx" {
-            let name = path.file_name().unwrap().to_str().unwrap().to_string();
-            let xml = std::fs::read_to_string(&path).unwrap();
-            match material_to_pbr(&xml, None) {
-                Ok(t) => {
-                    res.push((name, t));
-                }
-                Err(e) => warn!("failed to parse {name}: {e:?}"),
+        let name = path.file_name().unwrap().to_str().unwrap().to_string();
+        let xml = std::fs::read_to_string(&path).unwrap();
+        match material_to_pbr(&xml, None) {
+            Ok(t) => {
+                res.push((name, t));
             }
+            Err(e) => warn!("failed to parse {name}: {e:?}"),
         }
     }
 

@@ -14,3 +14,4 @@ thiserror = "1.0.61"
 
 [dev-dependencies]
 bevy = "0.14.0-rc.3"
+glob = "0.3.1"
