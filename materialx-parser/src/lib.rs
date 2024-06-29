@@ -195,26 +195,19 @@ pub struct Output {
 mod tests {
     use super::*;
 
-    #[test]
-    fn jade() {
-        let xml =
-            include_str!("../../resources/examples/StandardSurface/standard_surface_jade.mtlx");
-        println!("{:?}", MaterialX::from_str(xml).unwrap());
-    }
-
     // tries to parse all mtlx files in the examples folder
     #[test]
     fn all() {
-        let examples = std::fs::read_dir("../resources/examples/StandardSurface").unwrap();
+        let examples = glob::glob("../resources/**/*.mtlx").unwrap();
         for example in examples {
             let example = example.unwrap();
-            let path = example.path();
+            let path = example.as_path();
             if path.is_dir() {
                 continue;
             }
             if path.extension().unwrap() == "mtlx" {
                 let name = path.file_name().unwrap().to_str().unwrap().to_string();
-                let xml = std::fs::read_to_string(&path).unwrap();
+                let xml = std::fs::read_to_string(path).unwrap();
 
                 match MaterialX::from_str(&xml) {
                     Ok(_) => println!("{name}: Success"),

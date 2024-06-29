@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 bevy_color = { version = "0.14.0-rc.3", optional = true, default-features = false }
-quick-xml = { version = "0.34.0", features = ["serialize"] }
+quick-xml = { version = "0.34.0", features = ["serialize", "overlapped-lists"] }
 serde = { version = "1.0.203", features = ["derive"] }
 serde_path_to_error = "0.1.16"
 thiserror = "1.0.61"
@@ -17,3 +17,6 @@ thiserror = "1.0.61"
 [features]
 default = ["bevy"]
 bevy = ["dep:bevy_color"]
+
+[dev-dependencies]
+glob = "0.3.1"
