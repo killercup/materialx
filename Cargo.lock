@@ -358,7 +358,9 @@ name = "bevy-materialx-importer"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_asset",
  "bevy_pbr",
+ "bevy_reflect",
  "glob",
  "materialx-parser",
  "thiserror",

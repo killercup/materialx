@@ -1,3 +1,5 @@
+use std::str::FromStr as _;
+
 use bevy::{color::palettes::css::SANDY_BROWN, prelude::*};
 use bevy_materialx_importer::material_to_pbr;
 
@@ -81,7 +83,8 @@ fn example_files() -> Vec<(String, StandardMaterial)> {
         }
         let name = path.file_name().unwrap().to_str().unwrap().to_string();
         let xml = std::fs::read_to_string(&path).unwrap();
-        match material_to_pbr(&xml, None) {
+        let def = materialx_parser::MaterialX::from_str(&xml).unwrap();
+        match material_to_pbr(&def, None) {
             Ok(t) => {
                 res.push((name, t));
             }
