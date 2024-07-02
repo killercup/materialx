@@ -8,13 +8,13 @@ authors = [
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-bevy_app = { version = "0.14.0-rc.3", default-features = false }
-bevy_pbr = { version =  "0.14.0-rc.3", default-features = false }
-bevy_reflect = { version =  "0.14.0-rc.3", default-features = false }
-bevy_asset = { version =  "0.14.0-rc.3", default-features = false }
+bevy_app = { version = "0.14.0-rc.4", default-features = false }
+bevy_pbr = { version =  "0.14.0-rc.4", default-features = false }
+bevy_reflect = { version =  "0.14.0-rc.4", default-features = false }
+bevy_asset = { version =  "0.14.0-rc.4", default-features = false }
 materialx-parser = { version = "0.1.0", path = "../materialx-parser" }
 thiserror = "1.0.61"
 
 [dev-dependencies]
-bevy = "0.14.0-rc.3"
+bevy = "0.14.0-rc.4"
 glob = "0.3.1"
