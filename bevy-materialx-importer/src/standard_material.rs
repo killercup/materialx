@@ -1,5 +1,5 @@
 use bevy_pbr::StandardMaterial;
-use materialx_parser::{ConversionError, Input, MaterialX, TopLevel};
+use materialx_parser::{ConversionError, Input, Inputs, MaterialX, TopLevel};
 
 use crate::Error;
 
@@ -41,8 +41,16 @@ pub fn material_to_pbr(def: &MaterialX, material: Option<&str>) -> Result<Standa
     };
 
     let standard_surface_name = match surface_material {
-        materialx_parser::TopLevel::SurfaceMaterial { input, .. } if input.nodename.is_some() => {
-            input.nodename.as_ref().unwrap()
+        materialx_parser::TopLevel::SurfaceMaterial { input, .. }
+            if input
+                .get("surfaceshader")
+                .and_then(|x| x.nodename.as_ref())
+                .is_some() =>
+        {
+            input
+                .get("surfaceshader")
+                .and_then(|x| x.nodename.as_ref())
+                .unwrap()
         }
         _ => return Err(Error::SurfaceDefinitionNotFound(material_name.to_string())),
     };
@@ -86,11 +94,11 @@ pub fn material_to_pbr(def: &MaterialX, material: Option<&str>) -> Result<Standa
 /// Get parameter from list of [`Input`]s and convert it to the desired type
 ///
 /// This works because [`Input`] has [TryFrom] implementations for usual bevy types
-fn get_param<'a, T>(inputs: &'a [Input], name: &str) -> Result<Option<T>, Error>
+fn get_param<'a, T>(inputs: &'a Inputs, name: &str) -> Result<Option<T>, Error>
 where
     T: TryFrom<&'a Input, Error = ConversionError>,
 {
-    let Some(input) = inputs.iter().find(|i| i.name == name) else {
+    let Some(input) = inputs.get(name) else {
         return Ok(None);
     };
     Ok(Some(input.try_into()?))

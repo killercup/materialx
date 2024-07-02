@@ -4,6 +4,7 @@ use serde::{de::Error as _, Deserialize};
 use std::str::FromStr;
 
 pub use input::{ConversionError, Input};
+use nodes::Node;
 pub use typed_input::{DataType, DataTypeAndValue, ValueParseError};
 
 mod input;
@@ -34,6 +35,19 @@ pub struct MaterialX {
     pub namespace: Option<String>,
     #[serde(rename = "$value")]
     pub materials: Vec<TopLevel>,
+}
+
+impl MaterialX {
+    pub fn get(&self, find_name: &str) -> Option<&TopLevel> {
+        self.materials.iter().find(|m| match m {
+            TopLevel::SurfaceMaterial { name, .. }
+            | TopLevel::NodeGraph { name, .. }
+            | TopLevel::StandardSurface { name, .. }
+            | TopLevel::Image { name, .. }
+            | TopLevel::TiledImage { name, .. } => name == find_name,
+            _ => false,
+        })
+    }
 }
 
 #[derive(Debug, Clone, thiserror::Error)]
@@ -152,7 +166,7 @@ pub enum TopLevel {
         #[serde(rename = "@name")]
         name: String,
         // type: "material"
-        input: Input,
+        input: Inputs,
     },
     #[serde(rename = "nodegraph")]
     NodeGraph {
@@ -160,21 +174,57 @@ pub enum TopLevel {
         name: String,
         // type: "material"
         #[serde(default)]
-        input: Vec<Input>,
+        input: Inputs,
+        output: Vec<Output>,
         // TODO: hashmap with custom deserializer to collect nodes by `@name`
         #[serde(rename = "$value", default)]
-        nodes: Vec<nodes::Node>,
-        output: Vec<Output>,
+        nodes: Vec<nodes::ParsedNode>,
     },
     #[serde(rename = "standard_surface")]
     StandardSurface {
         #[serde(rename = "@name")]
         name: String,
-        // type: "surfaceshader"
-        input: Vec<Input>,
+        input: Inputs,
+    },
+    Image {
+        #[serde(rename = "@name")]
+        name: String,
+        #[serde(rename = "@type")]
+        r#type: DataType,
+        input: Inputs,
+    },
+    TiledImage {
+        #[serde(rename = "@name")]
+        name: String,
+        #[serde(rename = "@type")]
+        r#type: DataType,
+        input: Inputs,
     },
     #[serde(other)]
     Other,
+}
+
+impl TopLevel {
+    pub fn get(&self, name: &str) -> Option<&Input> {
+        match self {
+            TopLevel::SurfaceMaterial { input, .. }
+            | TopLevel::NodeGraph { input, .. }
+            | TopLevel::StandardSurface { input, .. }
+            | TopLevel::Image { input, .. }
+            | TopLevel::TiledImage { input, .. } => input.get(name),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(transparent)]
+pub struct Inputs(pub Vec<Input>);
+
+impl Inputs {
+    pub fn get(&self, name: &str) -> Option<&Input> {
+        self.0.iter().find(|i| i.name == name)
+    }
 }
 
 #[derive(Debug, Deserialize)]
