@@ -34,6 +34,11 @@ Universal Scene Description.
 A file format that can be used to transport rich scene descriptions between applications.
 ([Wikipedia](https://en.wikipedia.org/wiki/Universal_Scene_Description))
 
+**GLTF**:
+GL Transmission Format.
+A file format for 3D scenes and models.
+([Wikipedia](https://en.wikipedia.org/wiki/GlTF))
+
 **Face set**:
 A set of faces in a geometry.
 A face is a flat surface that is part of the boundary of a solid object.

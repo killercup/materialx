@@ -21,13 +21,22 @@ What it is in usage (according to Copilot):
 > It is supported by a number of commercial and open source tools, including Autodesk Maya, Foundry's Katana, and Pixar's RenderMan.
 > MaterialX is also integrated into the Universal Scene Description (USD) format, allowing materials to be shared between different applications and rendering engines.
 
+What it is in relation to glTF (according to Copilot):
+
+> MaterialX and glTF are two complementary technologies that are commonly used together in the field of computer graphics.
+> MaterialX provides a standardized way to define and manage materials, while glTF ensures efficient transmission and rendering of these materials in real-time applications.
+> glTF supports Physically Based Rendering (PBR) materials, which are commonly defined using MaterialX.
+> MaterialX contains a set of standard nodes that match the PBR materials defined in the glTF specification, making it easy to convert between the two formats.
+
 ## What does a MaterialX file look like?
 
 A MTLX file is a XML file.
 It describes a material using a set of nodes and connections.
-Most XML nodes have name and type attributes and either child nodes or values.
 
-## Standard surface example
+All XML nodes have a `name` attribute.
+It is a unique identifier in the scope, i.e. all elements with the same parent must have different names.
+
+### Standard surface example
 
 This is a simple example ([`standard_surface_jade.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/resources/Materials/Examples/StandardSurface/standard_surface_jade.mtlx)):
 
@@ -61,7 +70,7 @@ graph TD
     `"]
 ```
 
-## Standard surface procedural example
+### Standard surface procedural example
 
 [`standard_surface_brick_procedural.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/resources/Materials/Examples/StandardSurface/standard_surface_brick_procedural.mtlx) on the other hand is a procedural material, which contains a `nodegraph`.
 
@@ -85,3 +94,19 @@ graph TB
         Multiply --> Mix --> Constant --> RGBtoHSV --> Combine3 --> etc["..."]
     end
 ```
+
+## Ecosystem
+
+### PBR
+
+- [OpenPBR](https://academysoftwarefoundation.github.io/OpenPBR/) is "a surface shading model"
+
+### Open `mtlx` files
+
+- The [MaterialX](https://github.com/AcademySoftwareFoundation/MaterialX) repo contains a simple graph viewer/editor
+- [QuiltiX](https://github.com/PrismPipeline/QuiltiX) is "a graphical node editor to edit, and author MaterialX based materials of 3D assets"
+- Bevy: Soon™
+
+### Writing MaterialX files
+
+- Blender: Soon™
