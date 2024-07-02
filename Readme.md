@@ -19,9 +19,9 @@ Given a bunch of MaterialX files, and try to parse and render them.
 How to get MaterialX files for testing?
 Aside from the official [MaterialX spec repository][1],
 you can find open source MaterialX files on multiple platforms,
-e.g. [AMD's GPU Open MaterialX Library][matlib].
-In [`resources/amd-examples/matlib-downloader`](./resources/amd-examples/matlib-downloader/README.md)
+e.g. [AMD's GPU Open MaterialX Library](https://matlib.gpuopen.com/)
+or [ambientCG](https://ambientcg.com/).
+In [`resources/downloader`](resources/downloader/README.md)
 you can find a script to download a bunch of test files from there.
 
 [1]: https://github.com/AcademySoftwareFoundation/MaterialX/tree/8c26c7eeb37ba29ef08821fd1a503823e444b8ec/resources/Materials/Examples
-[matlib]: https://matlib.gpuopen.com/

@@ -1,3 +1,7 @@
 [workspace]
 resolver = "2"
-members = [ "bevy-materialx-importer","materialx-parser", "resources/amd-examples/matlib-downloader"]
+members = [
+    "bevy-materialx-importer",
+    "materialx-parser",
+    "resources/downloader",
+]
