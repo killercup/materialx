@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn debug_one() {
         let file = std::fs::read_to_string(
-            "../resources/amd-examples/materials/Metal/Aluminum Matte/Aluminum_Matte.mtlx",
+            "../resources/materialx-examples/StandardSurface/standard_surface_brass_tiled.mtlx",
         )
         .unwrap();
         dbg!(MaterialX::from_str(&file));
