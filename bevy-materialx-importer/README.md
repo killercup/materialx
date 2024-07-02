@@ -9,7 +9,7 @@ but most features are not implemented yet.
 
 ## Example
 
-```rust,norun
+```rust,no_run
 use bevy::prelude::*;
 use bevy_materialx_importer::MaterialXPlugin;
 
