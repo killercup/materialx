@@ -195,10 +195,20 @@ pub struct Output {
 mod tests {
     use super::*;
 
+    #[test]
+    fn debug_one() {
+        let file = std::fs::read_to_string(
+            "../resources/amd-examples/materials/Metal/Aluminum Matte/Aluminum_Matte.mtlx",
+        )
+        .unwrap();
+        dbg!(MaterialX::from_str(&file));
+    }
+
     // tries to parse all mtlx files in the examples folder
     #[test]
     fn all() {
         let examples = glob::glob("../resources/**/*.mtlx").unwrap();
+        let mut failed = 0;
         for example in examples {
             let example = example.unwrap();
             let path = example.as_path();
@@ -211,9 +221,16 @@ mod tests {
 
                 match MaterialX::from_str(&xml) {
                     Ok(_) => println!("{name}: Success"),
-                    Err(e) => eprintln!("{name}: Failed {e}"),
+                    Err(e) => {
+                        eprintln!("{name}: Failed {e}");
+                        failed += 1;
+                    }
                 }
             }
+        }
+
+        if failed > 0 {
+            panic!("{failed} example files failed to parse");
         }
     }
 }
