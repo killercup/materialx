@@ -15,7 +15,7 @@ mod typed_input;
 ///
 /// # Specification
 ///
-/// see [MTLX File Format Definition](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.Specification.md#mtlx-file-format-definition)
+/// see [MTLX File Format Definition](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md#mtlx-file-format-definition)
 #[derive(Debug, Deserialize)]
 pub struct MaterialX {
     /// A string containing the version number of the MaterialX specification

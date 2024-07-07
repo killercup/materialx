@@ -103,6 +103,6 @@ A MaterialX element that assigns a material to a geometry.
 
 ## Sources
 
-- [MaterialX: An Open Standard for Network-Based CG Object Looks](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.Specification.md), Version 1.39 (preview), from May 9, 2024
+- [MaterialX: An Open Standard for Network-Based CG Object Looks](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md), Version 1.39 (preview), from May 9, 2024
 - Github Copilot
 - Others where noted

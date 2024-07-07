@@ -3,7 +3,7 @@
 It seems that many of the types from the MaterialX spec are described
 in `mtlx` files in the `MaterialX` repo
 using `nodedef` and other elements.
-For example, [this](https://github.com/AcademySoftwareFoundation/MaterialX/blob/7f41da2bb5c950be6b9ee84070994c9d8fc32685/libraries/bxdf/standard_surface.mtlx)
+For example, [this](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/libraries/bxdf/standard_surface.mtlx)
 is the definition of the `standard_surface` node.
 
 In theory we could parse these files to get the types.
@@ -14,7 +14,7 @@ to keep this project simple while we focus on the core functionality.
 
 @killercup on [discord](https://discord.com/channels/691052431525675048/743663924229963868/1255791894680698881):
 
-> one thing that intrigues me is not hard-coding standard_surface and friends at all and just parsing the nodedefs from [`standard_surface.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/7f41da2bb5c950be6b9ee84070994c9d8fc32685/libraries/bxdf/standard_surface.mtlx)
+> one thing that intrigues me is not hard-coding standard_surface and friends at all and just parsing the nodedefs from [`standard_surface.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/libraries/bxdf/standard_surface.mtlx)
 >
 > is that what you meant above? so standard_surface is just one of the possible ubershaders we generate?
 

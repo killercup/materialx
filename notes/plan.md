@@ -7,7 +7,7 @@ On [discord](https://discord.com/channels/691052431525675048/743663924229963868/
 to implement [MaterialX](https://materialx.org) support in [Bevy](https://bevyengine.org/)
 (formatting edited):
 
-> Great! I think a good first step would be to parse enough MaterialX to duplicate `StandardMaterial`. Here's an example of a material like that <https://github.com/AcademySoftwareFoundation/MaterialX/blob/main/resources/Materials/Examples/StandardSurface/standard_surface_jade.mtlx>
+> Great! I think a good first step would be to parse enough MaterialX to duplicate `StandardMaterial`. Here's an example of a material like that <https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/resources/Materials/Examples/StandardSurface/standard_surface_jade.mtlx>
 >
 > The spec is here <https://materialx.org/Specification.html>
 >
@@ -71,13 +71,13 @@ Regarding different material types
 > Along with the corresponding `<nodedef>` this allows you to define arbitrary inputs, and to use substitutions.
 > so you could have a `<nodegraph>` that takes the filename of a texture as an input, and then instantiate that repeatedly with different textures.
 > This could turn into a batchable shader on the Bevy side.
-> See [spec](https://github.com/AcademySoftwareFoundation/MaterialX/blob/main/documents/Specification/MaterialX.Specification.md#custom-node-definition-using-node-graphs) -- a Bevy ubershader would be a "functional nodegraph"
+> See [spec](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md#custom-node-definition-using-node-graphs) -- a Bevy ubershader would be a "functional nodegraph"
 
 ### Using variants
 
 @pcwalton on [discord](https://discord.com/channels/691052431525675048/743663924229963868/1255780213745258579):
 
-> [Material variants](https://github.com/AcademySoftwareFoundation/MaterialX/blob/main/documents/Specification/MaterialX.Specification.md#material-variants)
+> [Material variants](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md#material-variants)
 > -- this looks like what we want.
 > So to define a bunch of materials that all use the same ubershader, you would define the ubershader as a `<nodegraph>`, and then write `<variant>`s for each material.
 > The `<variant>` supplies concrete values to the node's inputs.

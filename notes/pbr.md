@@ -12,7 +12,7 @@ It also has a nice overview of [Material Properties].)
 We will try to map the properties of the MaterialX files we get to `StandardMaterial`.
 
 [MaterialX]: http://www.materialx.org/
-[PBR Spec]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.PBRSpec.md
+[PBR Spec]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.PBRSpec.md
 [Bevy]: https://bevyengine.org/
 [Filament]: https://google.github.io/filament/Filament.html
 [Material Properties]: https://google.github.io/filament/Material%20Properties.pdf

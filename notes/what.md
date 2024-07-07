@@ -1,7 +1,7 @@
 # What is MaterialX
 
 - [MaterialX Website](http://www.materialx.org/)
-- [Specification](https://github.com/AcademySoftwareFoundation/MaterialX/tree/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification) (Version 1.39 (preview))
+- [Specification](https://github.com/AcademySoftwareFoundation/MaterialX/tree/v1.39.0/documents/Specification) (Version 1.39 (preview))
 
 What it is conceptually (according to Copilot):
 
@@ -38,7 +38,7 @@ It is a unique identifier in the scope, i.e. all elements with the same parent m
 
 ### Standard surface example
 
-This is a simple example ([`standard_surface_jade.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/resources/Materials/Examples/StandardSurface/standard_surface_jade.mtlx)):
+This is a simple example ([`standard_surface_jade.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/resources/Materials/Examples/StandardSurface/standard_surface_jade.mtlx)):
 
 ```xml
 <?xml version="1.0"?>
@@ -72,7 +72,7 @@ graph TD
 
 ### Standard surface procedural example
 
-[`standard_surface_brick_procedural.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/resources/Materials/Examples/StandardSurface/standard_surface_brick_procedural.mtlx) on the other hand is a procedural material, which contains a `nodegraph`.
+[`standard_surface_brick_procedural.mtlx`](https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/resources/Materials/Examples/StandardSurface/standard_surface_brick_procedural.mtlx) on the other hand is a procedural material, which contains a `nodegraph`.
 
 ```mermaid
 graph TB

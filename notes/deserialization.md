@@ -19,7 +19,7 @@ Here are some notes on the ways we did the custom parts.
 
 [quick-xml]: https://docs.rs/quick-xml/0.34.0/
 [serde]: https://serde.rs/
-[data types]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.Specification.md#materialx-data-types
+[data types]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md#materialx-data-types
 
 ## Well-typed enums with "Unknown" variants
 
@@ -50,7 +50,7 @@ and then we could construct our type by looking at the keys in the hash map.
 Instead of a hash map we could also define a simpler struct that more closely matches the XML and derive Deserialize on that and then work with that.
 (We can even define it inside our Deserialize implementation to hide the type.)
 
-[`<input>`]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/b26f19e75226163acea0e24b457e3d4649e04b64/documents/Specification/MaterialX.Specification.md#inputs
+[`<input>`]: https://github.com/AcademySoftwareFoundation/MaterialX/blob/v1.39.0/documents/Specification/MaterialX.Specification.md#inputs
 
 ## Good error messages from serde
 
