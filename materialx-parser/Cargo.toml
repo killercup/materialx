@@ -8,11 +8,12 @@ authors = [
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+quick-xml = { version = "0.35.0", features = [] }
 bevy_color = { version = "0.14.0-rc.4", optional = true, default-features = false }
-quick-xml = { version = "0.35.0", features = ["serialize", "overlapped-lists"] }
-serde = { version = "1.0.203", features = ["derive"] }
-serde_path_to_error = "0.1.16"
 thiserror = "1.0.61"
+roxmltree = "0.20.0"
+indexmap = "2.2.6"
+smol_str = "0.2.2"
 
 [features]
 default = ["bevy"]

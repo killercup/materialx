@@ -9,7 +9,7 @@ Expect continuous changes to every aspect of this project.
 
 ## Crates
 
-- [materialx-parser](./materialx-parser/README.md): Parser for MaterialX (`.mtlx`) files
+- [materialx-parser](materialx-parser2/README.md): Parser for MaterialX (`.mtlx`) files
 - [bevy-materialx-importer](./bevy-materialx-importer/README.md): Support MaterialX as assets in Bevy
 - [materials-downloader](./resources/downloader/README.md): Download free MaterialX files from different sites for testing
 

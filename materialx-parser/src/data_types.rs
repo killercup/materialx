@@ -1,7 +1,5 @@
 use std::str::FromStr;
 
-use serde::{Deserialize, Deserializer};
-
 #[derive(Debug, Clone)]
 pub enum DataType {
     Integer,
@@ -54,16 +52,6 @@ impl FromStr for DataType {
             "stringarray" => Ok(DataType::StringArray),
             s => Ok(DataType::Unknown(s.into())),
         }
-    }
-}
-
-impl<'de> Deserialize<'de> for DataType {
-    fn deserialize<D>(deserializer: D) -> Result<DataType, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
     }
 }
 
@@ -260,16 +248,6 @@ impl FromStr for Vector2 {
     }
 }
 
-impl<'de> Deserialize<'de> for Vector2 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector3(pub [f64; 3]);
 
@@ -286,16 +264,6 @@ impl FromStr for Vector3 {
     }
 }
 
-impl<'de> Deserialize<'de> for Vector3 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Vector4(pub [f64; 4]);
 
@@ -309,16 +277,6 @@ impl FromStr for Vector4 {
             .collect::<Result<_, _>>()?;
         ValueParseError::assert_length(4, v.len())?;
         Ok(Vector4([v[0], v[1], v[2], v[3]]))
-    }
-}
-
-impl<'de> Deserialize<'de> for Vector4 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
     }
 }
 
@@ -342,16 +300,6 @@ impl FromStr for Matrix3x3 {
     }
 }
 
-impl<'de> Deserialize<'de> for Matrix3x3 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Matrix4x4(pub [Vector4; 4]);
 
@@ -370,15 +318,5 @@ impl FromStr for Matrix4x4 {
             Vector4([v[8], v[9], v[10], v[11]]),
             Vector4([v[12], v[13], v[14], v[15]]),
         ]))
-    }
-}
-
-impl<'de> Deserialize<'de> for Matrix4x4 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
     }
 }
