@@ -1,50 +1,7 @@
 use super::{AccessError, GetByTypeAndName, Input, Node};
-use crate::ast::Element;
+use crate::{ast::Element, node};
 
-macro_rules! node {
-    ($name:ident(
-        ($( $param:ident : $paramType:ident $(= $paramDefault:expr)? ),+)
-        => $returnType:ident
-    )) => {
-        #[derive(Debug, Clone)]
-        #[allow(non_camel_case_types)]
-        pub struct $name {
-            $(
-                pub $param: Input,
-            )*
-        }
-
-        impl $name {
-            pub const ELEMENT_NAME: &'static str = stringify!($name);
-        }
-
-        impl Node for $name {
-            fn from_element(element: &Element) -> Result<Self, AccessError> {
-                if element.tag != Self::ELEMENT_NAME {
-                    return Err(AccessError::TagMismatch {
-                        name: element.name.clone(),
-                        expected: Self::ELEMENT_NAME.into(),
-                        found: element.tag.clone(),
-                    });
-                }
-
-                Ok(Self {
-                    $(
-                        $param: element
-                            .get::<Input>(stringify!($param).into())
-                            .map_err(|e| AccessError::SubElementAccess {
-                                child: stringify!($param).into(),
-                                parent: element.name.clone(),
-                                source: Box::new(e),
-                            })?,
-                    )*
-                })
-            }
-        }
-    };
-}
-
-node!(add((in1: Input, in2: Input) => Add));
+node!(add((in1: T, in2: T) => Add));
 node!(subtract((in1: T, in2: T) => T));
 node!(multiply((in1: T, in2: T) => T));
 node!(divide((in1: T, in2: T) => T));

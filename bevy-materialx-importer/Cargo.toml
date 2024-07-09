@@ -14,7 +14,9 @@ bevy_reflect = { version =  "0.14.0", default-features = false }
 bevy_asset = { version =  "0.14.0", default-features = false }
 materialx-parser = { version = "0.1.0", path = "../materialx-parser" }
 thiserror = "1.0.61"
+smol_str = "0.2.2"
+tracing = "0.1.40"
 
 [dev-dependencies]
-bevy = "0.14.0"
+bevy = { version = "0.14.0", features = ["jpeg", "exr", "pbr_multi_layer_material_textures"] }
 glob = "0.3.1"

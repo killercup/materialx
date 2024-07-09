@@ -14,6 +14,10 @@ pub struct MaterialX {
     pub elements: IndexMap<SmolStr, Element>,
 }
 
+impl MaterialX {
+    pub(crate) const NAME: SmolStr = SmolStr::new_inline("<root>");
+}
+
 impl FromStr for MaterialX {
     type Err = crate::Error;
 

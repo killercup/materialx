@@ -34,7 +34,7 @@ impl<'xml> TryFrom<Document<'xml>> for MaterialX {
             }
 
             let child: Element = child.try_into().map_err(|e| AstError::Build {
-                parent: "<root>".into(),
+                parent: MaterialX::NAME,
                 index,
                 source: Box::new(e),
             })?;

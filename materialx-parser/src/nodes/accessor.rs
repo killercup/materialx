@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use super::Node;
 use crate::{
     ast::{Element, MaterialX},
@@ -14,8 +16,8 @@ pub trait GetByTypeAndName {
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum AccessError {
-    #[error("No element found with name `{name}`")]
-    NotFound { name: SmolStr },
+    #[error("No element found with name `{name}` (in `{parent}`)")]
+    NotFound { name: SmolStr, parent: SmolStr },
     #[error("Element `{name}` has wrong tag mismatch, expected `{expected}`, found `{found}`")]
     TagMismatch {
         name: SmolStr,
@@ -38,12 +40,21 @@ pub enum AccessError {
     InputMissingData { name: SmolStr },
     #[error("No value found for input `{name}`")]
     InputMissingValue { name: SmolStr },
+    #[error("Failed to convert input `{parent}.{name}` to `{r#type}`")]
+    InputConvertError {
+        name: SmolStr,
+        parent: SmolStr,
+        r#type: &'static str,
+        source: ValueParseError,
+    },
     #[error("Could not get `{child}` from `{parent}`")]
     SubElementAccess {
         child: SmolStr,
         parent: SmolStr,
         source: Box<AccessError>,
     },
+    #[error("Unimplemented: {0}")]
+    Unimplemented(&'static str),
 }
 
 impl GetByTypeAndName for MaterialX {
@@ -54,7 +65,10 @@ impl GetByTypeAndName for MaterialX {
         let elem = self
             .elements
             .get(&name)
-            .ok_or_else(|| AccessError::NotFound { name: name.clone() })?;
+            .ok_or_else(|| AccessError::NotFound {
+                name: name.clone(),
+                parent: MaterialX::NAME,
+            })?;
         T::from_element(elem).map_err(|e| AccessError::ConversionError {
             name: name.clone(),
             r#type: std::any::type_name::<T>(),
@@ -68,7 +82,15 @@ impl MaterialX {
         let name = name.into();
         self.elements
             .get(&name)
-            .ok_or_else(|| AccessError::NotFound { name })
+            .ok_or_else(|| AccessError::NotFound {
+                name,
+                parent: MaterialX::NAME,
+            })
+    }
+
+    pub fn tags(&self, tag: impl Into<SmolStr>) -> impl Iterator<Item = &Element> {
+        let tag = tag.into();
+        self.elements.values().filter(move |elem| elem.tag == tag)
     }
 }
 
@@ -80,7 +102,10 @@ impl GetByTypeAndName for Element {
         let elem = self
             .children
             .get(&name)
-            .ok_or_else(|| AccessError::NotFound { name: name.clone() })?;
+            .ok_or_else(|| AccessError::NotFound {
+                name: name.clone(),
+                parent: self.name.clone(),
+            })?;
         T::from_element(elem).map_err(|e| AccessError::ConversionError {
             name: name.clone(),
             r#type: std::any::type_name::<T>(),

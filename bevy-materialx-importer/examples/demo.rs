@@ -84,12 +84,12 @@ fn example_files() -> Vec<(String, StandardMaterial)> {
         let name = path.file_name().unwrap().to_str().unwrap().to_string();
         let xml = std::fs::read_to_string(&path).unwrap();
         let def = materialx_parser::MaterialX::from_str(&xml).unwrap();
-        match material_to_pbr(&def, None) {
-            Ok(t) => {
-                res.push((name, t));
-            }
-            Err(e) => warn!("failed to parse {name}: {e:?}"),
-        }
+        // match material_to_pbr(&def, None) {
+        //     Ok(t) => {
+        //         res.push((name, t));
+        //     }
+        //     Err(e) => warn!("failed to parse {name}: {e:?}"),
+        // }
     }
 
     res

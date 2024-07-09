@@ -5,3 +5,6 @@ members = [
     "materialx-parser",
     "resources/downloader",
 ]
+
+[profile.dev.package."*"]
+opt-level = 3

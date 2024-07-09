@@ -52,19 +52,22 @@ pub enum InputData {
     Value(SmolStr),
     NodeReference { node_name: SmolStr },
     InputReference { interface_name: SmolStr },
+    OutputReference { nodegraph: SmolStr, output: SmolStr },
 }
 
 impl Node for InputData {
-    fn from_element(element: &Element) -> Result<Self, AccessError> {
-        if let Ok(value) = element.attr("value") {
+    fn from_element(e: &Element) -> Result<Self, AccessError> {
+        if let Ok(value) = e.attr("value") {
             Ok(InputData::Value(value))
-        } else if let Ok(node_name) = element.attr("nodename") {
+        } else if let Ok(node_name) = e.attr("nodename") {
             Ok(InputData::NodeReference { node_name })
-        } else if let Ok(interface_name) = element.attr("interface_name") {
+        } else if let Ok(interface_name) = e.attr("interface_name") {
             Ok(InputData::InputReference { interface_name })
+        } else if let (Ok(nodegraph), Ok(output)) = (e.attr("nodegraph"), e.attr("output")) {
+            Ok(InputData::OutputReference { nodegraph, output })
         } else {
             Err(AccessError::InputMissingData {
-                name: element.name.clone(),
+                name: e.name.clone(),
             })
         }
     }
