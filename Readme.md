@@ -13,10 +13,13 @@ Expect continuous changes to every aspect of this project.
 - [bevy-materialx-importer](./bevy-materialx-importer/README.md): Support MaterialX as assets in Bevy
 - [materials-downloader](./resources/downloader/README.md): Download free MaterialX files from different sites for testing
 
-## Testing
+## Demo + Testing
 
 Our test approach is very simple:
 Given a bunch of MaterialX files, try to parse and render them.
+
+Run the demo using `cargo run` in `demo/`
+(change to the folder for bevy to find all demo assets).
 
 How to get MaterialX files for testing?
 Aside from the official [MaterialX spec repository][1],

@@ -7,6 +7,8 @@ Bevy comes with an `AssetServer`, which is used to load and manage assets.
 Assets are identified by a URI, usually a filesystem path.
 It might include a fragment to specify a sub-asset within a file.
 
+For MaterialX assets, we'll use the label (fragment) to address a specific material.
+
 ## Loading Assets
 
 Loading assets is done asynchronously,
@@ -25,10 +27,12 @@ or use `Res<AssetServer>.get_path(id)` to get the path.
 
 Any type implementing `AssetLoader` can registered as an asset loader in the `App`.
 
+We use this to load MaterialX files as `StandardMaterial`.
+
 ## Pre-processors
 
 Assets can be pre-processed before they are loaded.
 This way an asset could be translated from one format into another one
 before the game accesses it.
 
-TODO: When does it take place?
+We currently don't do that.

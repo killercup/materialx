@@ -1,8 +1,6 @@
 #![allow(clippy::single_match)]
 
-use std::ops::Deref;
-
-use bevy_asset::{AssetPath, AssetServer};
+use bevy_asset::{Asset, AssetPath, AssetServer, Handle, LoadContext, NestedLoader};
 use bevy_pbr::StandardMaterial;
 use materialx_parser::{
     ast::Element,
@@ -11,18 +9,19 @@ use materialx_parser::{
     wrap_node, GetAllByType, GetByTypeAndName as _, Input, MaterialX, Node,
 };
 use smol_str::SmolStr;
+use std::ops::Deref;
 use tracing::{debug, instrument, warn};
+use StandardMaterialTransformError as Error;
 
-use crate::Error;
+mod processor;
 
 pub fn material_to_pbr(
     def: &MaterialX,
-    material: Option<&str>,
+    material: Option<SmolStr>,
     path: &AssetPath,
-    assets: &AssetServer,
+    loader: &mut LoadContext<'_>,
 ) -> Result<StandardMaterial, Error> {
     let material = if let Some(name) = material {
-        let name: SmolStr = name.into();
         def.get(name.clone()).map_err(|e| Error::MaterialNotFound {
             name,
             source: Box::new(e),
@@ -44,7 +43,7 @@ pub fn material_to_pbr(
         }
     })?;
 
-    build_material(&surface, &material, def, path, assets).map_err(|e| Error::MaterialMapping {
+    build_material(&surface, &material, def, path, loader).map_err(|e| Error::MaterialMapping {
         name: material.name.clone(),
         source: Box::new(e),
     })
@@ -56,7 +55,7 @@ fn build_material(
     material: &surfacematerial,
     def: &MaterialX,
     path: &AssetPath,
-    assets: &AssetServer,
+    loader: &mut LoadContext<'_>,
 ) -> Result<StandardMaterial, MaterialError> {
     let mut res = StandardMaterial::default();
     {
@@ -71,7 +70,7 @@ fn build_material(
                     if let Ok(tiled) = def.get::<tiledimage>(node_name) {
                         let filename = tiled.get::<Element>("file".into())?.attr("value")?;
                         let path = path.resolve_embed(&filename).unwrap();
-                        res.base_color_texture = Some(assets.load(&path));
+                        res.base_color_texture = Some(loader.load(&path));
                         debug!("Loaded base color texture {path}");
                     }
                 }
@@ -91,7 +90,7 @@ fn build_material(
                     if let Ok(tiled) = def.get::<tiledimage>(node_name) {
                         let filename = tiled.get::<Element>("file".into())?.attr("value")?;
                         let path = path.resolve_embed(&filename).unwrap();
-                        res.clearcoat_roughness_texture = Some(assets.load(&path));
+                        res.clearcoat_roughness_texture = Some(loader.load(&path));
                         debug!("Loaded coat_roughness texture {path}");
                     }
                 }
@@ -113,7 +112,7 @@ fn build_material(
                         if let Ok(tiled) = def.get::<tiledimage>(input) {
                             let filename = tiled.get::<Element>("file".into())?.attr("value")?;
                             let path = path.resolve_embed(&filename).unwrap();
-                            res.normal_map_texture = Some(assets.load(&path));
+                            res.normal_map_texture = Some(loader.load(&path));
                             debug!("Loaded normal texture {path}");
                         }
                     }
@@ -138,7 +137,7 @@ fn build_material(
                         if let Ok(tiled) = def.get::<tiledimage>(input) {
                             let filename = tiled.get::<Element>("file".into())?.attr("value")?;
                             let path = path.resolve_embed(&filename).unwrap();
-                            res.depth_map = Some(assets.load(&path));
+                            res.depth_map = Some(loader.load(&path));
                             debug!("Loaded displacement {path}");
                         }
                     }
@@ -190,3 +189,24 @@ wrap_node!(standard_surface);
 wrap_node!(tiledimage);
 wrap_node!(normalmap);
 wrap_node!(displacement);
+
+#[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
+pub enum StandardMaterialTransformError {
+    #[error("No material defined")]
+    NoMaterialDefined,
+    #[error("Material `{name}` not found")]
+    MaterialNotFound {
+        name: SmolStr,
+        source: Box<AccessError>,
+    },
+    #[error("Failed to get element: {0}")]
+    AccessError(#[from] AccessError),
+    #[error("Currently not supported: {reason} (node {node})")]
+    Unsupported { reason: String, node: SmolStr },
+    #[error("Failed to build material {name}: {source}")]
+    MaterialMapping {
+        name: SmolStr,
+        source: Box<MaterialError>,
+    },
+}

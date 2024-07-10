@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "bevy-materialx-importer",
+    "bevy-materialx-importer", "demo",
     "materialx-parser",
     "resources/downloader",
 ]
