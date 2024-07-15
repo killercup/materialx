@@ -13,6 +13,6 @@ bevy_pbr = { version =  "0.14.0", default-features = false }
 bevy_reflect = { version =  "0.14.0", default-features = false }
 bevy_asset = { version =  "0.14.0", default-features = false }
 materialx-parser = { version = "0.1.0", path = "../materialx-parser" }
-thiserror = "1.0.61"
+thiserror = "1.0.62"
 smol_str = "0.2.2"
 tracing = "0.1.40"

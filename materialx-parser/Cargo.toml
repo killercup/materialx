@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 quick-xml = { version = "0.35.0", features = [] }
 bevy_color = { version = "0.14.0", optional = true, default-features = false }
-thiserror = "1.0.61"
+thiserror = "1.0.62"
 roxmltree = "0.20.0"
 indexmap = "2.2.6"
 smol_str = "0.2.2"
