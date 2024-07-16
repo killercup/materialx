@@ -62,13 +62,13 @@ fn build_material(
             Ok(input) => match input.data {
                 InputData::Value(val) => {
                     let val = DataTypeAndValue::from_tag_and_value(&input.r#type, &val)?;
-                    res.base_color = val.try_into().unwrap();
+                    res.base_color = val.try_into()?;
                 }
                 InputData::NodeReference { node_name } => {
                     debug!("Found node ref to {node_name}");
                     if let Ok(tiled) = def.get::<tiledimage>(node_name) {
                         let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-                        let path = path.resolve_embed(&filename).unwrap();
+                        let path = path.resolve_embed(&filename)?;
                         res.base_color_texture = Some(loader.load(&path));
                         debug!("Loaded base color texture {path}");
                     }
@@ -88,7 +88,7 @@ fn build_material(
                     debug!("Found node ref to {node_name}");
                     if let Ok(tiled) = def.get::<tiledimage>(node_name) {
                         let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-                        let path = path.resolve_embed(&filename).unwrap();
+                        let path = path.resolve_embed(&filename)?;
                         res.clearcoat_roughness_texture = Some(loader.load(&path));
                         debug!("Loaded coat_roughness texture {path}");
                     }
@@ -110,7 +110,7 @@ fn build_material(
 
                         if let Ok(tiled) = def.get::<tiledimage>(input) {
                             let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-                            let path = path.resolve_embed(&filename).unwrap();
+                            let path = path.resolve_embed(&filename)?;
                             res.normal_map_texture = Some(loader.load(&path));
                             debug!("Loaded normal texture {path}");
                         }
@@ -135,7 +135,7 @@ fn build_material(
 
                         if let Ok(tiled) = def.get::<tiledimage>(input) {
                             let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-                            let path = path.resolve_embed(&filename).unwrap();
+                            let path = path.resolve_embed(&filename)?;
                             res.depth_map = Some(loader.load(&path));
                             debug!("Loaded displacement {path}");
                         }
@@ -181,6 +181,8 @@ pub enum MaterialError {
     ParseInput(#[from] ValueParseError),
     #[error("Failed to get input: {0}")]
     GetInput(#[from] AccessError),
+    #[error("Failed to parse asset path: {0}")]
+    ParseAssetPath(#[from] bevy_asset::ParseAssetPathError),
 }
 
 wrap_node!(surfacematerial);
