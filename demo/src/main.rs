@@ -23,6 +23,8 @@ fn main() {
             spacing: Vec3::ONE,
             current_index: 0,
         })
+        .add_event::<HoverBall>()
+        .add_event::<BlurBall>()
         .add_event::<SelectedBall>()
         .add_event::<DeselectedBalls>()
         .add_systems(
@@ -39,9 +41,11 @@ fn main() {
             (
                 spawn_balls,
                 move_camera,
-                (select_ball, update_info_text).run_if(on_event::<SelectedBall>()),
+                update_info_text.run_if(on_event::<HoverBall>()),
+                reset_info_text.run_if(on_event::<BlurBall>()),
+                select_ball.run_if(on_event::<SelectedBall>()),
                 escape,
-                (deselect_balls, reset_info_text)
+                deselect_balls
                     .run_if(on_event::<DeselectedBalls>())
                     .after(escape),
             ),
@@ -199,6 +203,8 @@ fn spawn_balls(
                 ..Default::default()
             },
             PickableBundle::default(),
+            On::<Pointer<Over>>::send_event::<HoverBall>(),
+            On::<Pointer<Out>>::send_event::<BlurBall>(),
             On::<Pointer<Click>>::send_event::<SelectedBall>(),
         ));
     }
@@ -229,6 +235,24 @@ fn load_example_files(mut commands: Commands, assets: Res<AssetServer>) {
 
 #[derive(Event)]
 struct DeselectedBalls;
+
+#[derive(Event)]
+struct HoverBall(Entity);
+
+impl From<ListenerInput<Pointer<Over>>> for HoverBall {
+    fn from(event: ListenerInput<Pointer<Over>>) -> Self {
+        HoverBall(event.target)
+    }
+}
+
+#[derive(Event)]
+struct BlurBall;
+
+impl From<ListenerInput<Pointer<Out>>> for BlurBall {
+    fn from(_event: ListenerInput<Pointer<Out>>) -> Self {
+        BlurBall
+    }
+}
 
 #[derive(Event)]
 struct SelectedBall(Entity);
@@ -311,7 +335,7 @@ fn spawn_info_text(mut commands: Commands) {
 
 fn update_info_text(
     balls: Query<&Ball, With<Ball>>,
-    mut events: EventReader<SelectedBall>,
+    mut events: EventReader<HoverBall>,
     mut text: Query<&mut Text, With<MaterialName>>,
 ) {
     for event in events.read() {
