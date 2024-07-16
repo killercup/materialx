@@ -1,11 +1,11 @@
-// TODO: Load readme with example
+#![doc = include_str!("../README.md")]
 
 pub mod ast;
 pub mod data_types;
 pub mod nodes;
 
-pub use ast::MaterialX;
-pub use nodes::{GetAllByType, GetByTypeAndName, Input, Node};
+pub use ast::{Element, MaterialX};
+pub use nodes::{AccessError, GetAllByType, GetByTypeAndName, Input, InputData, Node};
 
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
@@ -18,6 +18,8 @@ pub enum Error {
     Ast(#[from] ast::AstError),
     #[error("Include elements are not supported yet")]
     IncludesNotSupported,
+    #[error("Failed to access element")]
+    Get(#[from] AccessError),
 }
 
 #[cfg(test)]
@@ -37,29 +39,39 @@ mod tests {
                 </child>
             </materialx>
         "#;
-        dbg!(MaterialX::from_str(xml));
+        let _ = dbg!(MaterialX::from_str(xml));
     }
 
     #[test]
     fn debug_one() {
         let file = std::fs::read_to_string(
-            "../resources/materials/ambientCg/Bricks075A_1K-JPG.zip/Bricks075A_1K-JPG.mtlx",
+            "../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx",
         )
         .unwrap();
-        dbg!(MaterialX::from_str(&file));
+        let _ = dbg!(MaterialX::from_str(&file));
     }
 
     #[test]
     fn readme() {
-        use crate::MaterialX;
+        // use materialx_parser::{wrap_node, MaterialX};
 
-        let file = std::fs::read_to_string(
-            "../resources/materials/ambientCg/Bricks075A_1K-JPG.zip/Bricks075A_1K-JPG.mtlx",
-        )
+        let mat = MaterialX::from_str(include_str!(
+            "../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+        ))
         .unwrap();
-        let mat = MaterialX::from_str(&file).unwrap();
 
-        mat.element("standard_surface");
+        wrap_node!(surfacematerial);
+        wrap_node!(standard_surface);
+
+        let first_material = mat.all::<surfacematerial>().next().unwrap();
+        let nodes::InputData::NodeReference { node_name } = first_material
+            .get::<Input>("surfaceshader".into())
+            .unwrap()
+            .data
+        else {
+            return;
+        };
+        let _surface = mat.get::<standard_surface>(node_name.clone()).unwrap();
     }
 
     // tries to parse all mtlx files in the examples folder
@@ -80,7 +92,7 @@ mod tests {
                 match MaterialX::from_str(&xml) {
                     Ok(_) => println!("{name}: Success"),
                     Err(e) => {
-                        if (matches!(e, Error::IncludesNotSupported)) {
+                        if matches!(e, Error::IncludesNotSupported) {
                             println!("{name}: Includes not supported");
                             continue;
                         }

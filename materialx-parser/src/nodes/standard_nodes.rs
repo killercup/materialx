@@ -1,5 +1,4 @@
-use super::{AccessError, GetByTypeAndName, Input, Node};
-use crate::{ast::Element, node};
+use crate::node;
 
 node!(add((in1: T, in2: T) => Add));
 node!(subtract((in1: T, in2: T) => T));
@@ -45,9 +44,9 @@ node!(tiledimage((file: T, uvtiling: T) => T));
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr as _;
-
     use super::*;
+    use crate::{Element, GetByTypeAndName as _, Node as _};
+    use std::str::FromStr as _;
 
     #[test]
     fn add() {

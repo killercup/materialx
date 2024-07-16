@@ -16,14 +16,28 @@ Can parse MaterialX files and convert them to a Rust struct.
 Somewhat like this:
 
 ```rust
-let mat = MaterialX::from_str("..")?;
+use std::str::FromStr;
+use materialx_parser::{
+    MaterialX, Error, wrap_node,
+    Input, InputData, GetByTypeAndName, GetAllByType
+};
 
-// all returns iterator over nodes matching specified type
-let first_material = mat.all<SurfaceMaterial>().first().unwrap();
-// get fetches node by name and casts it to specified type
-let surface = mat.get<StandardSurface>(first_material.get<Input>("surfaceshader").nodename);
-// or: index operator returning most generic node type
-// might be clever on Vec<Input> to return Input instead of Node
-// decide: panic or return dummy node
-let surface = mat.get<StandardSurface>(first_material["surfaceshader"].nodename);
+fn main() -> Result<(), Error> {
+    let mat = MaterialX::from_str(include_str!(
+        "../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+    ))?;
+
+    wrap_node!(surfacematerial);
+    wrap_node!(standard_surface);
+
+    let first_material = mat.all::<surfacematerial>().next().unwrap();
+    let InputData::NodeReference { node_name } = first_material
+        .get::<Input>("surfaceshader".into())?
+        .data
+    else {
+        return Ok(());
+    };
+    let surface = mat.get::<standard_surface>(node_name.clone())?;
+    Ok(())
+}
 ```

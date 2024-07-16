@@ -1,15 +1,14 @@
 #![allow(clippy::single_match)]
 
-use bevy_asset::{Asset, AssetPath, AssetServer, Handle, LoadContext, NestedLoader};
+use bevy_asset::{AssetPath, LoadContext};
 use bevy_pbr::StandardMaterial;
 use materialx_parser::{
     ast::Element,
     data_types::{DataTypeAndValue, ValueParseError},
     nodes::{AccessError, InputData},
-    wrap_node, GetAllByType, GetByTypeAndName as _, Input, MaterialX, Node,
+    wrap_node, GetAllByType, GetByTypeAndName as _, Input, MaterialX,
 };
 use smol_str::SmolStr;
-use std::ops::Deref;
 use tracing::{debug, instrument, warn};
 use StandardMaterialTransformError as Error;
 

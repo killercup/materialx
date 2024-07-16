@@ -1,3 +1,4 @@
+use super::MaterialsSource;
 use crate::utils::{download_and_unzip, get, log_err};
 use anyhow::{ensure, Context as _, Result};
 use serde::Deserialize;
@@ -12,7 +13,7 @@ pub struct AmbientCg {
     pub limit: usize,
 }
 
-impl crate::MaterialsSource for AmbientCg {
+impl MaterialsSource for AmbientCg {
     const NAME: &'static str = "ambientCg";
 
     fn download(&self, target_dir: &Path) -> Result<()> {
@@ -44,12 +45,8 @@ fn download_asset(asset: Asset, target_dir: &Path) -> Result<()> {
     let download = asset.smallest_download()?;
     let name = &asset.display_name;
 
-    download_and_unzip(
-        &download.full_download_path,
-        &download.file_name,
-        target_dir,
-    )
-    .with_context(|| format!("downloading {name} failed"))?;
+    download_and_unzip(&download.full_download_path, &asset.asset_id, target_dir)
+        .with_context(|| format!("downloading {name} failed"))?;
 
     Ok(())
 }
@@ -94,6 +91,7 @@ impl Asset {
     }
 }
 
+#[allow(unused)] // some fields only for debugging
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Download {

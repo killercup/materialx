@@ -12,7 +12,7 @@ impl MaterialX {
     pub fn resolve_input<T>(
         &self,
         element: &Element,
-        parent: Option<&Element>,
+        _parent: Option<&Element>,
         name: SmolStr,
     ) -> Result<T, AccessError>
     where
@@ -33,13 +33,13 @@ impl MaterialX {
                     r#type: type_name::<T>(),
                     source: e,
                 }))?,
-            InputData::NodeReference { node_name } => {
+            InputData::NodeReference { .. } => {
                 Err(AccessError::Unimplemented("following node references"))
             }
-            InputData::InputReference { interface_name } => {
+            InputData::InputReference { .. } => {
                 Err(AccessError::Unimplemented("following input references"))
             }
-            InputData::OutputReference { nodegraph, output } => {
+            InputData::OutputReference { .. } => {
                 Err(AccessError::Unimplemented("following output references"))
             }
         }

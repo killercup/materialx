@@ -1,3 +1,4 @@
+use super::MaterialsSource;
 use crate::utils::{download_and_unzip, get, log_err};
 use anyhow::{ensure, Context as _, Result};
 use serde::Deserialize;
@@ -12,7 +13,7 @@ pub struct MatLib {
     pub categories: Vec<String>,
 }
 
-impl crate::MaterialsSource for MatLib {
+impl MaterialsSource for MatLib {
     const NAME: &'static str = "MatLib";
 
     fn download(&self, target_dir: &Path) -> Result<()> {
@@ -51,7 +52,7 @@ fn download_materials(category: &str, target_dir: &Path) -> Result<()> {
 
 #[tracing::instrument(level = "info", skip_all, fields(name=material.title))]
 fn download_asset(material: Material, target_dir: &Path) -> Result<()> {
-    let file_name = &material.title;
+    let file_name = &material.id;
     let package_id = material
         .packages
         .first()

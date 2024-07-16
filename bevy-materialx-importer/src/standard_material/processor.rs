@@ -1,4 +1,4 @@
-use crate::{material_to_pbr, MaterialX};
+use crate::MaterialX;
 use bevy_asset::transformer::{AssetTransformer, TransformedAsset};
 use bevy_pbr::StandardMaterial;
 

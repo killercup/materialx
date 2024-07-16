@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_easings::*;
-use bevy_materialx_importer::{MaterialX, MaterialXLoader};
+use bevy_materialx_importer::{MaterialX, MaterialXPlugin};
 use bevy_mod_picking::prelude::*;
 use std::time::Duration;
 
@@ -13,13 +13,12 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            MaterialXPlugin,
             EasingsPlugin,
             DefaultPickingPlugins
                 .build()
                 .disable::<DefaultHighlightingPlugin>(),
         ))
-        .register_asset_loader(MaterialXLoader)
-        .init_asset::<bevy_materialx_importer::MaterialX>()
         .insert_resource(Arrange {
             spacing: Vec3::ONE,
             current_index: 0,
@@ -207,6 +206,7 @@ fn spawn_balls(
 
 /// All the example materials by their name
 #[derive(Debug, Resource)]
+#[allow(dead_code)]
 struct ExampleFiles(Vec<(String, Handle<MaterialX>)>);
 
 fn load_example_files(mut commands: Commands, assets: Res<AssetServer>) {
