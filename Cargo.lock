@@ -3215,7 +3215,6 @@ dependencies = [
  "bevy_color",
  "glob",
  "indexmap",
- "quick-xml",
  "roxmltree",
  "smol_str",
  "thiserror",
@@ -3998,15 +3997,6 @@ name = "profiling"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43d84d1d7a6ac92673717f9f6d1518374ef257669c24ebc5ac25d5033828be58"
-
-[[package]]
-name = "quick-xml"
-version = "0.35.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86e446ed58cef1bbfe847bc2fda0e2e4ea9f0e57b90c507d4781292590d72a4e"
-dependencies = [
- "memchr",
-]
 
 [[package]]
 name = "quinn"
