@@ -1,16 +1,17 @@
 // TODO: Add preprocessor to convert mtlx to standard material in some format (e.g. ron)
 
 use crate::{material_to_pbr, standard_material::StandardMaterialTransformError};
-use bevy_asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};
+use bevy_asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext, ReflectAsset};
 use bevy_pbr::StandardMaterial;
-use bevy_reflect::TypePath;
+use bevy_reflect::{Reflect, TypePath};
 use smol_str::SmolStr;
 use std::str::FromStr;
 
 #[derive(Debug, Default)]
 pub struct MaterialXLoader;
 
-#[derive(Debug, Asset, TypePath)]
+#[derive(Debug, Asset, Reflect)]
+#[reflect(Asset)]
 pub struct MaterialX {
     pub file_name: Option<String>,
     pub material_name: Option<SmolStr>,

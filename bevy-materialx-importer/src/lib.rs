@@ -16,5 +16,7 @@ impl Plugin for MaterialXPlugin {
     fn build(&self, app: &mut App) {
         app.register_asset_loader(MaterialXLoader);
         app.init_asset::<MaterialX>();
+        app.register_type::<MaterialX>();
+        app.register_asset_reflect::<MaterialX>();
     }
 }

@@ -8,9 +8,11 @@ mod meta;
 pub use meta::{ColorSpace, Version};
 
 #[derive(Debug)]
+#[cfg_attr(feature = "bevy", derive(bevy_reflect::Reflect))]
 pub struct MaterialX {
     pub version: Version,
     pub colorspace: Option<ColorSpace>,
+    #[cfg_attr(feature = "bevy", reflect(ignore))] // FIXME: bevy_reflect doesn't support IndexMap
     pub elements: IndexMap<SmolStr, Element>,
 }
 
@@ -27,10 +29,15 @@ impl FromStr for MaterialX {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "bevy", derive(bevy_reflect::Reflect))]
 pub struct Element {
     pub tag: SmolStr,
     pub name: SmolStr,
+    #[cfg_attr(feature = "bevy", reflect(ignore))]
+    // FIXME: bevy_reflect doesn't support IndexMap -- also it'd be recursive
     pub attributes: IndexMap<SmolStr, SmolStr>,
+    #[cfg_attr(feature = "bevy", reflect(ignore))]
+    // FIXME: bevy_reflect doesn't support IndexMap -- also it'd be recursive
     pub children: IndexMap<SmolStr, Element>,
 }
 

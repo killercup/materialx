@@ -3,6 +3,7 @@ use std::{num::ParseIntError, str::FromStr};
 use smol_str::SmolStr;
 
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "bevy", derive(bevy_reflect::Reflect))]
 pub struct Version {
     pub major: u8,
     pub minor: u8,
@@ -49,6 +50,7 @@ pub enum VersionError {
 }
 
 #[derive(Debug)]
+#[cfg_attr(feature = "bevy", derive(bevy_reflect::Reflect))]
 pub enum ColorSpace {
     SrgbTexture,
     LinRec709,
