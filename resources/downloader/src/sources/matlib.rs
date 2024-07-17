@@ -1,4 +1,4 @@
-use super::MaterialsSource;
+use super::{MaterialsSource, Metadata};
 use crate::utils::{download_and_unzip, get, log_err};
 use anyhow::{ensure, Context as _, Result};
 use serde::Deserialize;
@@ -9,7 +9,7 @@ use url::Url;
 /// matlib.gpuopen.com
 #[derive(Debug, clap::Parser)]
 pub struct MatLib {
-    #[clap(long, default_values = ["Base Materials", "Metal"])]
+    #[clap(long, default_values = ["Cobblestone", "Metal", "Marble", "SciFi"])]
     pub categories: Vec<String>,
 }
 
@@ -33,7 +33,6 @@ fn download_materials(category: &str, target_dir: &Path) -> Result<()> {
         .context("failed to fetch materials list")?;
 
     ensure!(materials.count > 0, "no materials found in category");
-
     debug!(num = materials.count, "got materials");
 
     fs_err::create_dir_all(&target_dir).context("failed to create download dir")?;
@@ -52,16 +51,44 @@ fn download_materials(category: &str, target_dir: &Path) -> Result<()> {
 
 #[tracing::instrument(level = "info", skip_all, fields(name=material.title))]
 fn download_asset(material: Material, target_dir: &Path) -> Result<()> {
-    let file_name = &material.id;
-    let package_id = material
-        .packages
-        .first()
-        .with_context(|| "material {file_name} has no packages")?;
+    let file_name = &material.title;
 
-    download_and_unzip(&download_url(package_id)?, file_name, target_dir)
-        .with_context(|| format!("downloading {file_name} failed"))?;
+    ensure!(
+        !material.packages.is_empty(),
+        "material {file_name} has no packages"
+    );
+    let mut packages = material
+        .packages
+        .iter()
+        .map(|id| get_package(id).with_context(|| format!("failed to fetch package {id}")))
+        .collect::<Result<Vec<Package>>>()
+        .context("failed to fetch packages")?;
+
+    packages.sort_by_key(|p| p.label.clone());
+    let smallest_package = packages.first().unwrap();
+    debug!(package=%smallest_package.id, size=%smallest_package.size, "chose package");
+
+    let meta = Metadata {
+        source: MatLib::NAME.to_string(),
+        name: material.title.clone(),
+        id: material.id.clone(),
+        url: public_url(&material.id)?.to_string(),
+        preview_image: None,
+    };
+
+    download_and_unzip(
+        &download_url(&smallest_package.id)?,
+        file_name,
+        target_dir,
+        &meta,
+    )
+    .with_context(|| format!("downloading {file_name} failed"))?;
 
     Ok(())
+}
+
+fn get_package(package_id: &str) -> Result<Package> {
+    Ok(get(&package_url(package_id)?)?.json()?)
 }
 
 fn materials_url(category: &str) -> Result<Url> {
@@ -77,12 +104,25 @@ fn materials_url(category: &str) -> Result<Url> {
     Ok(url)
 }
 
+fn package_url(package_id: &str) -> Result<Url> {
+    let url = Url::parse(&format!(
+        "https://api.matlib.gpuopen.com/api/packages/{package_id}/"
+    ))?;
+    Ok(url)
+}
+
 pub fn download_url(package_id: &str) -> Result<Url> {
     let mut url = Url::parse("https://api.matlib.gpuopen.com/api/packages")?;
     url.path_segments_mut()
         .expect("valid url")
         .push(package_id)
         .push("download");
+    Ok(url)
+}
+
+pub fn public_url(package_id: &str) -> Result<Url> {
+    let mut url = Url::parse("https://matlib.gpuopen.com/main/materials/all")?;
+    url.query_pairs_mut().append_pair("material", package_id);
     Ok(url)
 }
 
@@ -100,4 +140,13 @@ struct Material {
     packages: Vec<String>,
     mtlx_filename: String,
     mtlx_material_name: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Deserialize)]
+pub struct Package {
+    pub id: String,
+    pub file_url: String,
+    pub size: String,
+    pub file: String,
+    pub label: String,
 }

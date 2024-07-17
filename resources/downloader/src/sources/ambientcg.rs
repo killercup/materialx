@@ -1,4 +1,4 @@
-use super::MaterialsSource;
+use super::{MaterialsSource, Metadata};
 use crate::utils::{download_and_unzip, get, log_err};
 use anyhow::{ensure, Context as _, Result};
 use serde::Deserialize;
@@ -45,8 +45,21 @@ fn download_asset(asset: Asset, target_dir: &Path) -> Result<()> {
     let download = asset.smallest_download()?;
     let name = &asset.display_name;
 
-    download_and_unzip(&download.full_download_path, &asset.asset_id, target_dir)
-        .with_context(|| format!("downloading {name} failed"))?;
+    let meta = Metadata {
+        source: AmbientCg::NAME.to_string(),
+        name: name.clone(),
+        id: asset.asset_id.clone(),
+        url: public_url(&asset.asset_id)?.to_string(),
+        preview_image: Some(format!("./{}.png", asset.asset_id)),
+    };
+
+    download_and_unzip(
+        &download.full_download_path,
+        &asset.asset_id,
+        target_dir,
+        &meta,
+    )
+    .with_context(|| format!("downloading {name} failed"))?;
 
     Ok(())
 }
@@ -57,6 +70,12 @@ fn materials_url(limit: usize) -> Result<Url> {
         .append_pair("include", "downloadData,displayData")
         .append_pair("type", "Material")
         .append_pair("limit", limit.to_string().as_str());
+    Ok(url)
+}
+
+fn public_url(package_id: &str) -> Result<Url> {
+    let mut url = Url::parse("https://ambientcg.com/view")?;
+    url.query_pairs_mut().append_pair("id", package_id);
     Ok(url)
 }
 
