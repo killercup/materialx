@@ -168,6 +168,7 @@ fn build_material(
     set!(perceptual_roughness, "specular_roughness");
     set!(metallic, "metalness");
     set!(reflectance, "specular");
+    set!(ior, "specular_IOR");
     set!(clearcoat, "coat");
     set!(clearcoat_perceptual_roughness, "coat_roughness");
 
