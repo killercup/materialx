@@ -3,13 +3,17 @@
 use bevy::{
     core_pipeline::{fxaa::Fxaa, Skybox},
     prelude::*,
+    render::mesh::{SphereKind, SphereMeshBuilder},
 };
 use bevy_easings::*;
+use bevy_inspector_egui::{quick::WorldInspectorPlugin, DefaultInspectorConfigPlugin};
 use bevy_materialx_importer::{MaterialX, MaterialXPlugin};
 use bevy_mod_picking::prelude::*;
 use std::time::Duration;
 
 fn main() {
+    let filter = MaterialFilter(std::env::args().nth(1));
+
     App::new()
         .add_plugins((
             DefaultPlugins,
@@ -18,11 +22,18 @@ fn main() {
             DefaultPickingPlugins
                 .build()
                 .disable::<DefaultHighlightingPlugin>(),
+            DefaultInspectorConfigPlugin,
+            WorldInspectorPlugin::new(),
         ))
+        .register_type::<Ball>()
+        .register_type::<MaterialFilter>()
+        .register_type::<Arrange>()
+        .register_type::<ExampleFiles>()
         .insert_resource(Arrange {
             spacing: Vec3::ONE,
             current_index: 0,
         })
+        .insert_resource(filter)
         .add_event::<HoverBall>()
         .add_event::<BlurBall>()
         .add_event::<SelectedBall>()
@@ -53,6 +64,13 @@ fn main() {
         .run();
 }
 
+const CAMERA_START: Transform = Transform::from_translation(Vec3::new(-1.25, 2.25, 20.5));
+const TRANSITION_DURATION: u64 = 500;
+
+#[derive(Debug, Resource, Reflect)]
+#[reflect(Resource)]
+struct MaterialFilter(Option<String>);
+
 #[derive(Component)]
 struct Camera;
 
@@ -68,8 +86,7 @@ fn camera_setup(mut commands: Commands, assets: Res<AssetServer>) {
 
     commands
         .spawn(Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(-1.25, 2.25, 20.5))
-                .looking_at(Vec3::ZERO, Vec3::Y),
+            transform: CAMERA_START.looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
         .insert(Camera)
@@ -116,19 +133,24 @@ fn move_camera(
     }
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Reflect)]
+#[reflect(Resource)]
 struct Meshes {
     ball: Handle<Mesh>,
 }
 
 fn insert_sphere_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     commands.insert_resource(Meshes {
-        ball: meshes.add(Sphere::new(0.3)),
+        ball: meshes.add(SphereMeshBuilder::new(
+            0.3,
+            SphereKind::Ico { subdivisions: 42 },
+        )),
     });
 }
 
 /// Arrange spheres in a spiral pattern around the origin
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Reflect)]
+#[reflect(Resource)]
 struct Arrange {
     spacing: Vec3,
     current_index: i32,
@@ -156,7 +178,8 @@ impl Arrange {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 struct Ball {
     name: String,
     label: String,
@@ -211,17 +234,28 @@ fn spawn_balls(
 }
 
 /// All the example materials by their name
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Reflect)]
+#[reflect(Resource)]
 #[allow(dead_code)]
 struct ExampleFiles(Vec<(String, Handle<MaterialX>)>);
 
-fn load_example_files(mut commands: Commands, assets: Res<AssetServer>) {
+fn load_example_files(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    filter: Res<MaterialFilter>,
+) {
     let mut res = Vec::new();
 
     let examples = glob::glob("assets/**/*.mtlx").unwrap();
     for example in examples {
         let path = example.unwrap();
         let name = path.file_name().unwrap().to_str().unwrap().to_string();
+        if let Some(filter) = &filter.0 {
+            if !name.contains(filter) {
+                continue;
+            }
+        }
+
         res.push((
             name.clone(),
             assets.load(path.strip_prefix("assets").unwrap().to_path_buf()),
@@ -283,7 +317,7 @@ fn select_ball(
                 target,
                 EaseFunction::ExponentialIn,
                 EasingType::Once {
-                    duration: Duration::from_millis(200),
+                    duration: Duration::from_millis(TRANSITION_DURATION),
                 },
             ));
         }
@@ -303,10 +337,10 @@ fn deselect_balls(
     let (camera, transform) = camera.single_mut();
 
     commands.entity(camera).insert(transform.ease_to(
-        transform.with_translation(Vec3::new(-1.25, 2.25, 20.5)),
+        transform.with_translation(CAMERA_START.translation),
         EaseFunction::ExponentialIn,
         EasingType::Once {
-            duration: Duration::from_millis(200),
+            duration: Duration::from_millis(TRANSITION_DURATION),
         },
     ));
 }
