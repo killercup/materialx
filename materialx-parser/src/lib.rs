@@ -56,7 +56,7 @@ mod tests {
         // use materialx_parser::{wrap_node, MaterialX};
 
         let mat = MaterialX::from_str(include_str!(
-            "../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+            "../../assets/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
         ))
         .unwrap();
 
@@ -77,7 +77,7 @@ mod tests {
     // tries to parse all mtlx files in the examples folder
     #[test]
     fn all() {
-        let examples = glob::glob("../resources/**/*.mtlx").unwrap();
+        let examples = glob::glob("../assets/**/*.mtlx").unwrap();
         let mut failed = 0;
         for example in examples {
             let example = example.unwrap();

@@ -1,9 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-    "bevy-materialx-importer", "demo",
+    "bevy-materialx-importer",
     "materialx-parser",
-    "resources/downloader",
+    "demo",
+    "downloader",
 ]
 
 [profile.dev.package."*"]

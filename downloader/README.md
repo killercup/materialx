@@ -14,4 +14,4 @@ All materials are published under CC0.
 
 [This API spec](https://api.matlib.gpuopen.com/api/swagger/) was used as a reference.
 
-This script will only download materials under MIT license.
+This script will only download materials under the MIT license.
