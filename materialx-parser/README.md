@@ -24,7 +24,7 @@ use materialx_parser::{
 
 fn main() -> Result<(), Error> {
     let mat = MaterialX::from_str(include_str!(
-        "../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+        "../../assets/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
     ))?;
 
     wrap_node!(surfacematerial);

@@ -45,7 +45,7 @@ mod tests {
     #[test]
     fn debug_one() {
         let file = std::fs::read_to_string(
-            "../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx",
+            "../assets/materialx-examples/StandardSurface/standard_surface_jade.mtlx",
         )
         .unwrap();
         let _ = dbg!(MaterialX::from_str(&file));

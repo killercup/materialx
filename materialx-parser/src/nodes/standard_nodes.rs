@@ -65,7 +65,7 @@ mod tests {
     #[test]
     fn debug_add() {
         let file = std::fs::read_to_string(
-            "../resources/materialx-examples/StandardSurface/standard_surface_brick_procedural.mtlx",
+            "../assets/materialx-examples/StandardSurface/standard_surface_brick_procedural.mtlx",
         )
         .unwrap();
         let material = crate::MaterialX::from_str(&file).unwrap();

@@ -32,7 +32,7 @@ impl Node for Element {
 /// use std::str::FromStr;
 /// use materialx_parser::{wrap_node, MaterialX, GetAllByType};
 /// # let xml = include_str!(
-/// #   "../../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+/// #   "../../../assets/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
 /// # );
 /// let mat = MaterialX::from_str(xml)?;
 /// wrap_node!(standard_surface);
@@ -91,7 +91,7 @@ macro_rules! wrap_node {
 /// use std::str::FromStr;
 /// use materialx_parser::{node, MaterialX, GetByTypeAndName};
 /// # let xml = include_str!(
-/// #   "../../../resources/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
+/// #   "../../../assets/materialx-examples/StandardSurface/standard_surface_jade.mtlx"
 /// # );
 /// let mat = MaterialX::from_str(xml)?;
 /// node!(surfacematerial((surfaceshader: T) => material));
