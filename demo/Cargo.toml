@@ -11,3 +11,4 @@ bevy-materialx-importer = { version = "0.1.0", path = "../bevy-materialx-importe
 bevy_easings = "0.14.0"
 bevy_mod_picking = "0.20.1"
 glob = "0.3.1"
+anyhow = "1.0.86"

@@ -3,7 +3,7 @@
 use crate::{material_to_pbr, standard_material::StandardMaterialTransformError};
 use bevy_asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext, ReflectAsset};
 use bevy_pbr::StandardMaterial;
-use bevy_reflect::{Reflect, TypePath};
+use bevy_reflect::Reflect;
 use smol_str::SmolStr;
 use std::str::FromStr;
 
