@@ -2157,6 +2157,8 @@ dependencies = [
  "bevy_easings",
  "bevy_mod_picking",
  "glob",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
