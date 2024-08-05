@@ -13,4 +13,4 @@ bevy_mod_picking = "0.20.1"
 glob = "0.3.1"
 anyhow = "1.0.86"
 serde = { version = "1.0.204", features = ["derive"] }
-serde_json = "1.0.120"
+serde_json = "1.0.122"
