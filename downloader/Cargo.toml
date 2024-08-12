@@ -12,7 +12,7 @@ anyhow = "1.0.86"
 clap = { version = "4.5.8", features = ["derive"] }
 fs-err = { version = "2.11.0", features = ["io_safety"] }
 reqwest = { version = "0.12.5", features = ["rustls-tls", "json", "blocking"] }
-serde = { version = "1.0.203", features = ["derive"] }
+serde = { version = "1.0.206", features = ["derive"] }
 serde_json = "1.0.120"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
