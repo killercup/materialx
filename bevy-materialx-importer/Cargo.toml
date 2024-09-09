@@ -18,4 +18,4 @@ smol_str = "0.2.2"
 tracing = "0.1.40"
 
 [dev-dependencies]
-bevy = "0.14.0"
+bevy = "0.14.2"
