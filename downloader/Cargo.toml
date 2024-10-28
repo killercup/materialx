@@ -8,7 +8,7 @@ authors = [
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.91"
 clap = { version = "4.5.8", features = ["derive"] }
 fs-err = { version = "2.11.0", features = ["io_safety"] }
 reqwest = { version = "0.12.5", features = ["rustls-tls", "json", "blocking"] }
