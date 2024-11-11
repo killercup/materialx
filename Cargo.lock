@@ -475,7 +475,7 @@ dependencies = [
  "bevy_pbr",
  "bevy_reflect",
  "materialx-parser",
- "smol_str",
+ "smol_str 0.3.2",
  "thiserror 2.0.3",
  "tracing",
 ]
@@ -889,7 +889,7 @@ dependencies = [
  "bevy_math",
  "bevy_reflect",
  "bevy_utils",
- "smol_str",
+ "smol_str 0.2.2",
  "thiserror 1.0.69",
 ]
 
@@ -1202,7 +1202,7 @@ dependencies = [
  "petgraph",
  "serde",
  "smallvec",
- "smol_str",
+ "smol_str 0.2.2",
  "thiserror 1.0.69",
  "uuid",
 ]
@@ -1485,7 +1485,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils",
  "raw-window-handle",
- "smol_str",
+ "smol_str 0.2.2",
 ]
 
 [[package]]
@@ -1618,6 +1618,15 @@ dependencies = [
  "futures-io",
  "futures-lite",
  "piper",
+]
+
+[[package]]
+name = "borsh"
+version = "1.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5327f6c99920069d1fe374aa743be1af0031dea9f250852cdf1ae6a0861ee24"
+dependencies = [
+ "cfg_aliases 0.2.1",
 ]
 
 [[package]]
@@ -3576,7 +3585,7 @@ dependencies = [
  "glob",
  "indexmap",
  "roxmltree",
- "smol_str",
+ "smol_str 0.3.2",
  "thiserror 2.0.3",
 ]
 
@@ -4968,6 +4977,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "smol_str"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9676b89cd56310a87b93dec47b11af744f34d5fc9f367b829474eec0a891350d"
+dependencies = [
+ "borsh",
+ "serde",
+]
+
+[[package]]
 name = "socket2"
 version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6338,7 +6357,7 @@ dependencies = [
  "rustix",
  "sctk-adwaita",
  "smithay-client-toolkit",
- "smol_str",
+ "smol_str 0.2.2",
  "tracing",
  "unicode-segmentation",
  "wasm-bindgen",
