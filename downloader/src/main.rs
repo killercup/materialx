@@ -25,7 +25,11 @@ enum Source {
 }
 
 fn main() -> Result<()> {
+    if let Err(std::env::VarError::NotPresent) = std::env::var("RUST_LOG") {
+        std::env::set_var("RUST_LOG", "materials_downloader=info");
+    }
     tracing_subscriber::fmt::init();
+
     let args = Cli::parse();
     let target_dir = if let Some(dir) = args.download_dir {
         dir

@@ -28,4 +28,6 @@ or [ambientCG](https://ambientcg.com/).
 In [`downloader`](downloader/README.md)
 you can find a script to download a bunch of test files from there.
 
+The easiest way to use it is with `cargo run --bin materials-downloader ambientcg`.
+
 [1]: https://github.com/AcademySoftwareFoundation/MaterialX/tree/v1.39.0/resources/Materials/Examples
