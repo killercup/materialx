@@ -8,7 +8,7 @@ authors = [
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-thiserror = "1.0.63"
+thiserror = "2.0.3"
 roxmltree = "0.20.0"
 indexmap = "2.5.0"
 smol_str = "0.2.2"

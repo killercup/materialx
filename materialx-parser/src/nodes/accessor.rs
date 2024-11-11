@@ -24,13 +24,13 @@ pub enum AccessError {
         expected: SmolStr,
         found: SmolStr,
     },
-    #[error("Failed to convert element `{name}` to `{r#type}`")]
+    #[error("Failed to convert element `{name}` to `{type}`")]
     ConversionError {
         name: SmolStr,
         r#type: &'static str,
         source: Box<AccessError>,
     },
-    #[error("Failed to convert element `{name}` to `{r#type}`")]
+    #[error("Failed to convert element `{name}` to `{type}`")]
     ValueParseError {
         name: SmolStr,
         r#type: &'static str,
@@ -40,7 +40,7 @@ pub enum AccessError {
     InputMissingData { name: SmolStr },
     #[error("No value found for input `{name}`")]
     InputMissingValue { name: SmolStr },
-    #[error("Failed to convert input `{parent}.{name}` to `{r#type}`")]
+    #[error("Failed to convert input `{parent}.{name}` to `{type}`")]
     InputConvertError {
         name: SmolStr,
         parent: SmolStr,
