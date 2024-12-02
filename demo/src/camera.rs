@@ -14,45 +14,41 @@ impl Plugin for CameraPlugin {
 
 pub const CAMERA_START: Transform = Transform::from_translation(Vec3::new(-1.25, 2.25, 20.5));
 
-#[derive(Component)]
-struct Camera;
-
 fn camera_setup(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
+    commands.spawn((
+        PointLight {
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..default()
-    });
+        Transform::from_xyz(4.0, 8.0, 4.0),
+    ));
 
-    commands
-        .spawn(Camera3dBundle {
-            transform: CAMERA_START.looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        })
-        .insert(Camera)
-        .insert(EnvironmentMapLight {
+    commands.spawn((
+        Name::from("Main Camera"),
+        CAMERA_START.looking_at(Vec3::ZERO, Vec3::Y),
+        Camera3d::default(),
+        EnvironmentMapLight {
             diffuse_map: assets.load("examples/pisa_diffuse_rgb9e5_zstd.ktx2"),
             specular_map: assets.load("examples/pisa_specular_rgb9e5_zstd.ktx2"),
             intensity: 5000.0,
-        })
-        .insert(Skybox {
+            ..default()
+        },
+        Skybox {
             image: assets.load("examples/pisa_specular_rgb9e5_zstd.ktx2"),
             brightness: 5000.0,
-        })
-        // .insert(Skybox {
-        //     image: assets.load("examples/DaySkyHDRI029A_2K-HDR.exr"),
-        //     brightness: 5000.0,
-        // })
-        // .insert(ScreenSpaceReflectionsBundle::default())
-        .insert(Fxaa::default())
-        .insert(Name::from("Main Camera"));
+            ..default()
+        },
+        Fxaa::default(),
+    ));
+    // .insert(Skybox {
+    //     image: assets.load("examples/DaySkyHDRI029A_2K-HDR.exr"),
+    //     brightness: 5000.0,
+    // })
+    // .insert(ScreenSpaceReflectionsBundle::default())
 }
 
 fn move_camera(
-    mut camera: Query<(Entity, &mut Transform), With<Camera>>,
+    mut camera: Query<(Entity, &mut Transform), With<Camera3d>>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     let (_camera, mut transform) = camera.single_mut();

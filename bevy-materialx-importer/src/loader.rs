@@ -26,9 +26,9 @@ impl AssetLoader for MaterialXLoader {
 
     async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader<'_>,
-        _settings: &'a (),
-        load_context: &'a mut LoadContext<'_>,
+        reader: &mut dyn Reader,
+        _settings: &(),
+        load_context: &mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let mut res = String::new();
         reader

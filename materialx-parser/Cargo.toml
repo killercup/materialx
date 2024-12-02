@@ -2,9 +2,7 @@
 name = "materialx-parser"
 version = "0.1.0"
 edition = "2021"
-authors = [
-    "Pascal Hertleif <killercup@gmail.com>"
-]
+authors = ["Pascal Hertleif <killercup@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -12,8 +10,8 @@ thiserror = "2.0.3"
 roxmltree = "0.20.0"
 indexmap = "2.5.0"
 smol_str = "0.2.2"
-bevy_color = { version = "0.14.0", optional = true, default-features = false }
-bevy_reflect = { version =  "0.14.0", optional = true, default-features = false }
+bevy_color = { version = "0.15.0", optional = true, default-features = false }
+bevy_reflect = { version = "0.15.0", optional = true, default-features = false }
 
 [features]
 default = ["bevy"]

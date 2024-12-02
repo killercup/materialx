@@ -4,9 +4,8 @@ use bevy::{
     prelude::*,
     render::mesh::{SphereKind, SphereMeshBuilder},
 };
-use bevy_easings::*;
+use bevy_easings::{Ease as _, *};
 use bevy_materialx_importer::MaterialX;
-use bevy_mod_picking::prelude::*;
 
 use crate::camera::CAMERA_START;
 
@@ -14,36 +13,31 @@ pub struct BallPlugin;
 
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((
-            EasingsPlugin,
-            DefaultPickingPlugins
-                .build()
-                .disable::<DefaultHighlightingPlugin>(),
-        ))
-        .register_type::<Ball>()
-        .register_type::<Arrange>()
-        .insert_resource(Arrange {
-            spacing: Vec3::ONE,
-            current_index: 0,
-        })
-        .add_event::<HoverBall>()
-        .add_event::<BlurBall>()
-        .add_event::<SelectedBall>()
-        .add_event::<DeselectedBalls>()
-        .add_systems(Startup, (insert_sphere_mesh, spawn_info_text))
-        .add_systems(
-            Update,
-            (
-                spawn_balls,
-                update_info_text.run_if(on_event::<HoverBall>()),
-                reset_info_text.run_if(on_event::<BlurBall>()),
-                select_ball.run_if(on_event::<SelectedBall>()),
-                escape,
-                deselect_balls
-                    .run_if(on_event::<DeselectedBalls>())
-                    .after(escape),
-            ),
-        );
+        app.add_plugins(EasingsPlugin::default())
+            .register_type::<Ball>()
+            .register_type::<Arrange>()
+            .insert_resource(Arrange {
+                spacing: Vec3::ONE,
+                current_index: 0,
+            })
+            .add_event::<HoverBall>()
+            .add_event::<BlurBall>()
+            .add_event::<SelectedBall>()
+            .add_event::<DeselectedBalls>()
+            .add_systems(Startup, (insert_sphere_mesh, spawn_info_text))
+            .add_systems(
+                Update,
+                (
+                    spawn_balls,
+                    update_info_text.run_if(on_event::<HoverBall>),
+                    reset_info_text.run_if(on_event::<BlurBall>),
+                    select_ball.run_if(on_event::<SelectedBall>),
+                    escape,
+                    deselect_balls
+                        .run_if(on_event::<DeselectedBalls>)
+                        .after(escape),
+                ),
+            );
     }
 }
 
@@ -125,27 +119,38 @@ fn spawn_balls(
             .file_name
             .clone()
             .unwrap_or_else(|| "MaterialX".to_string());
-        commands.spawn((
-            Name::from(name.as_str()),
-            Ball {
-                name,
-                label: asset
-                    .material_name
-                    .as_ref()
-                    .map(|x| x.to_string())
-                    .unwrap_or_default(),
-            },
-            PbrBundle {
-                mesh: meshes.ball.clone(),
-                material: materials.add(asset.material.clone()),
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            },
-            PickableBundle::default(),
-            On::<Pointer<Over>>::send_event::<HoverBall>(),
-            On::<Pointer<Out>>::send_event::<BlurBall>(),
-            On::<Pointer<Click>>::send_event::<SelectedBall>(),
-        ));
+        commands
+            .spawn((
+                Name::from(name.as_str()),
+                Ball {
+                    name,
+                    label: asset
+                        .material_name
+                        .as_ref()
+                        .map(|x| x.to_string())
+                        .unwrap_or_default(),
+                },
+                Transform::from_translation(position),
+                MeshMaterial3d(materials.add(asset.material.clone())),
+                Mesh3d(meshes.ball.clone()),
+            ))
+            .observe(
+                |trigger: Trigger<Pointer<Over>>, mut events: EventWriter<HoverBall>| {
+                    events.send(HoverBall(trigger.event().target));
+                },
+            )
+            .observe(
+                |_trigger: Trigger<Pointer<Out>>, mut events: EventWriter<BlurBall>| {
+                    events.send(BlurBall);
+                },
+            )
+            .observe(
+                |mut trigger: Trigger<Pointer<Click>>, mut events: EventWriter<SelectedBall>| {
+                    trigger.propagate(false);
+                    let click_event: &Pointer<Click> = trigger.event();
+                    events.send(SelectedBall(click_event.target));
+                },
+            );
     }
 }
 
@@ -155,29 +160,11 @@ struct DeselectedBalls;
 #[derive(Event)]
 struct HoverBall(Entity);
 
-impl From<ListenerInput<Pointer<Over>>> for HoverBall {
-    fn from(event: ListenerInput<Pointer<Over>>) -> Self {
-        HoverBall(event.target)
-    }
-}
-
 #[derive(Event)]
 struct BlurBall;
 
-impl From<ListenerInput<Pointer<Out>>> for BlurBall {
-    fn from(_event: ListenerInput<Pointer<Out>>) -> Self {
-        BlurBall
-    }
-}
-
 #[derive(Event)]
 struct SelectedBall(Entity);
-
-impl From<ListenerInput<Pointer<Click>>> for SelectedBall {
-    fn from(event: ListenerInput<Pointer<Click>>) -> Self {
-        SelectedBall(event.target)
-    }
-}
 
 fn select_ball(
     mut commands: Commands,
@@ -197,8 +184,8 @@ fn select_ball(
                 .looking_at(ball_transform.translation, Vec3::Y);
             commands.entity(camera).insert(transform.ease_to(
                 target,
-                EaseFunction::ExponentialIn,
-                EasingType::Once {
+                bevy_easings::EaseFunction::ExponentialIn,
+                bevy_easings::EasingType::Once {
                     duration: Duration::from_millis(TRANSITION_DURATION),
                 },
             ));
@@ -220,7 +207,7 @@ fn deselect_balls(
 
     commands.entity(camera).insert(transform.ease_to(
         transform.with_translation(CAMERA_START.translation),
-        EaseFunction::ExponentialIn,
+        bevy_easings::EaseFunction::ExponentialIn,
         EasingType::Once {
             duration: Duration::from_millis(TRANSITION_DURATION),
         },
@@ -232,20 +219,15 @@ struct MaterialName;
 
 fn spawn_info_text(mut commands: Commands) {
     commands.spawn((
-        TextBundle::from_section(
-            "\n",
-            TextStyle {
-                font_size: 36.0,
-                ..default()
-            },
-        )
-        .with_style(Style {
+        MaterialName,
+        Text::new(""),
+        TextFont::from_font_size(36.0),
+        Node {
             position_type: PositionType::Absolute,
             bottom: Val::Px(5.0),
             right: Val::Px(5.0),
             ..default()
-        }),
-        MaterialName,
+        },
     ));
 }
 
@@ -256,11 +238,11 @@ fn update_info_text(
 ) {
     for event in events.read() {
         if let Ok(ball) = balls.get(event.0) {
-            text.single_mut().sections[0].value = format!("{}\n{}", ball.name, ball.label);
+            text.single_mut().0 = format!("{}\n{}", ball.name, ball.label);
         }
     }
 }
 
 fn reset_info_text(mut text: Query<&mut Text, With<MaterialName>>) {
-    text.single_mut().sections[0].value = "\n".to_string();
+    text.single_mut().0 = "\n".to_string();
 }

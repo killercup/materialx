@@ -16,6 +16,7 @@ fn main() -> Result<()> {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            MeshPickingPlugin,
             // Debug window
             WorldInspectorPlugin::new(),
             // Basic setup and movement
