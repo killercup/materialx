@@ -7,11 +7,11 @@ This crate adds support to MaterialX (`.mtlx`) files as in Bevy.
 Some basic functions work,
 but most features are not implemented yet.
 
-## Example
+## Examples
 
 ```rust,no_run
 use bevy::prelude::*;
-use bevy_materialx_importer::{MaterialXPlugin, MaterialX, MaterialXLoader};
+use bevy_materialx_importer::{MaterialX, MaterialXLoader, MaterialXPlugin};
 
 App::new()
     .add_plugins((DefaultPlugins, MaterialXPlugin))
@@ -31,7 +31,7 @@ fn spawn_ball(
     mut events: EventReader<AssetEvent<MaterialX>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>
+    mut meshes: ResMut<Assets<Mesh>>,
 ) {
     for event in events.read() {
         let AssetEvent::LoadedWithDependencies { id } = event else {
@@ -44,11 +44,8 @@ fn spawn_ball(
         };
 
         commands.spawn((
-            PbrBundle {
-                mesh: meshes.add(Sphere::new(0.3)),
-                material: materials.add(asset.material.clone()),
-                ..Default::default()
-            },
+            Mesh3d(meshes.add(Sphere::new(0.3))),
+            MeshMaterial3d(materials.add(asset.material.clone())),
         ));
     }
 }
