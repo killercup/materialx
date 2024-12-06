@@ -1,7 +1,7 @@
 #![allow(clippy::single_match)]
 
 use bevy_asset::{AssetPath, LoadContext};
-use bevy_pbr::{StandardMaterial, UvChannel};
+use bevy_pbr::StandardMaterial;
 use materialx_parser::{
     ast::Element,
     data_types::{DataTypeAndValue, ValueParseError},
@@ -10,7 +10,7 @@ use materialx_parser::{
     wrap_node, GetAllByType, GetByTypeAndName as _, Input, MaterialX,
 };
 use smol_str::SmolStr;
-use tracing::{debug, instrument, warn};
+use tracing::{debug, instrument, trace, warn};
 use StandardMaterialTransformError as Error;
 
 mod processor;
@@ -43,244 +43,154 @@ pub fn material_to_pbr(
         }
     })?;
 
-    build_material(&surface, &material, def, path, loader).map_err(|e| Error::MaterialMapping {
-        name: material.name.clone(),
-        source: Box::new(e),
-    })
+    MaterialBuilder::new()
+        .field(
+            Setter::new("base_color")
+                .file(|m, file| m.base_color_texture = Some(file))
+                .value(|m, val| {
+                    m.base_color = val.try_into()?;
+                    Ok(())
+                }),
+        )
+        .field(Setter::new("normal").file(|m, file| m.normal_map_texture = Some(file)))
+        .field(Setter::new("emissive").value(|m, val| {
+            m.emissive = val.try_into()?;
+            Ok(())
+        }))
+        .field(
+            Setter::new("specular_roughness")
+                // wrong format
+                // .file(|m, file| m.metallic_roughness_texture = Some(file))
+                .value(|m, val| {
+                    m.perceptual_roughness = val.try_into()?;
+                    Ok(())
+                }),
+        )
+        .field(Setter::new("metalness").value(|m, val| {
+            m.metallic = val.try_into()?;
+            Ok(())
+        }))
+        .field(Setter::new("specular").value(|m, val| {
+            m.reflectance = val.try_into()?;
+            Ok(())
+        }))
+        .field(Setter::new("specular_IOR").value(|m, val| {
+            m.ior = val.try_into()?;
+            Ok(())
+        }))
+        .field(Setter::new("base").value(|m, val| {
+            let val: f32 = val.try_into()?;
+            m.diffuse_transmission = 1.0 - val;
+            Ok(())
+        }))
+        .field(Setter::new("coat").value(|m, val| {
+            m.clearcoat = val.try_into()?;
+            Ok(())
+        }))
+        .field(Setter::new("coat_normal").file(|m, file| m.clearcoat_normal_texture = Some(file)))
+        .field(
+            Setter::new("coat_roughness")
+                .file(|m, file| m.clearcoat_roughness_texture = Some(file))
+                .value(|m, val| {
+                    m.clearcoat_perceptual_roughness = val.try_into()?;
+                    Ok(())
+                }),
+        )
+        .build(&surface, &material, def, path, loader)
+        .map_err(|e| Error::MaterialMapping {
+            name: material.name.clone(),
+            source: Box::new(e),
+        })
 }
 
-#[instrument(skip_all, fields(%material.name))]
-fn build_material(
-    surface: &standard_surface,
-    material: &surfacematerial,
-    def: &MaterialX,
-    path: &AssetPath,
-    loader: &mut LoadContext<'_>,
-) -> Result<StandardMaterial, MaterialError> {
-    let mut res = StandardMaterial::default();
-    match resolve_input(def, surface, "base_color") {
-        Ok(DataTypeAndValue::Filename(filename)) => {
-            let path = path.resolve_embed(&filename)?;
-            res.base_color_texture = Some(loader.load(&path));
+struct MaterialBuilder {
+    setters: Vec<Setter>,
+}
+
+impl MaterialBuilder {
+    fn new() -> Self {
+        Self { setters: vec![] }
+    }
+
+    fn field(mut self, setter: Setter) -> Self {
+        self.setters.push(setter);
+        self
+    }
+
+    #[instrument(skip_all, fields(%material.name))]
+    fn build(
+        self,
+        surface: &standard_surface,
+        material: &surfacematerial,
+        def: &MaterialX,
+        path: &AssetPath,
+        loader: &mut LoadContext<'_>,
+    ) -> Result<StandardMaterial, MaterialError> {
+        let mut res = StandardMaterial::default();
+        for setter in self.setters {
+            let field = setter.field.clone();
+            match resolve_input(def, surface, field.clone()) {
+                Ok(DataTypeAndValue::Filename(filename)) => {
+                    if let Some(f) = setter.file_handler {
+                        let path = path.resolve_embed(&filename)?;
+                        let handle = loader.load(&path);
+                        f(&mut res, handle);
+                    } else {
+                        debug!(filename, %field, "unexpected file");
+                    }
+                }
+                Ok(val) => {
+                    if let Some(f) = setter.value_handler {
+                        if let Err(error) = f(&mut res, val) {
+                            warn!(%error, "failed to assign {field}");
+                        }
+                    } else {
+                        debug!(?val, %field, "unexpected data");
+                    }
+                }
+                Err(ResolveError::NotFound { name, parent }) => {
+                    trace!(%name, %parent, "field {field} not found");
+                }
+                Err(error) => warn!(%error, "failed to get {field}"),
+            };
         }
-        Ok(val) => {
-            res.base_color = val.try_into()?;
+        Ok(res)
+    }
+}
+
+struct Setter {
+    field: SmolStr,
+    value_handler: Option<
+        Box<dyn FnOnce(&mut StandardMaterial, DataTypeAndValue) -> Result<(), MaterialError>>,
+    >,
+    file_handler:
+        Option<Box<dyn FnOnce(&mut StandardMaterial, bevy_asset::Handle<bevy_image::Image>)>>,
+}
+
+impl Setter {
+    fn new(field: impl Into<SmolStr>) -> Setter {
+        Setter {
+            field: field.into(),
+            value_handler: None,
+            file_handler: None,
         }
-        Err(error) => warn!(%error, "failed to get base_color"),
-    };
-    match resolve_input(def, surface, "normal") {
-        Ok(DataTypeAndValue::Filename(filename)) => {
-            let path = path.resolve_embed(&filename)?;
-            res.normal_map_texture = Some(loader.load(&path));
-        }
-        Ok(data) => debug!(?data, field = "normal", "unexpected data"),
-        Err(error) => warn!(%error, "failed to get normal"),
-    };
-    match resolve_input(def, surface, "emissive") {
-        Ok(val) => {
-            res.emissive = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get emissive"),
-    };
-    match resolve_input(def, surface, "specular_roughness") {
-        Ok(DataTypeAndValue::Filename(filename)) => {
-            let path = path.resolve_embed(&filename)?;
-            res.metallic_roughness_texture = Some(loader.load(&path));
-        }
-        Ok(val) => {
-            res.perceptual_roughness = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get emissive"),
-    };
-    match resolve_input(def, surface, "metalness") {
-        Ok(val) => {
-            res.metallic = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get emissive"),
-    };
-    match resolve_input(def, surface, "specular") {
-        Ok(val) => {
-            res.reflectance = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get emissive"),
-    };
-    match resolve_input(def, surface, "specular_IOR") {
-        Ok(val) => {
-            res.ior = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get emissive"),
-    };
-    match resolve_input(def, surface, "base") {
-        Ok(val) => {
-            let val: f32 = val.try_into()?;
-            res.diffuse_transmission = 1.0 - val;
-        }
-        Err(error) => warn!(%error, "failed to get base"),
-    };
-    match resolve_input(def, surface, "coat") {
-        Ok(val) => {
-            res.clearcoat = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get coat"),
-    };
-    match resolve_input(def, surface, "coat_normal") {
-        Ok(DataTypeAndValue::Filename(filename)) => {
-            let path = path.resolve_embed(&filename)?;
-            res.clearcoat_normal_texture = Some(loader.load(&path));
-        }
-        Ok(data) => debug!(?data, field = "coat_normal", "unexpected data"),
-        Err(error) => warn!(%error, "failed to get coat_normal"),
-    };
-    match resolve_input(def, surface, "coat_roughness") {
-        Ok(val) => {
-            res.clearcoat_perceptual_roughness = val.try_into()?;
-        }
-        Err(error) => warn!(%error, "failed to get coat_roughness"),
-    };
+    }
 
-    // {
-    //     match surface.get::<Input>("base_color".into()) {
-    //         Ok(input) => match input.data {
-    //             InputData::Value(val) => {
-    //                 let val = DataTypeAndValue::from_tag_and_value(&input.r#type, &val)?;
-    //                 res.base_color = val.try_into()?;
-    //             }
-    //             InputData::NodeReference { node_name } => {
-    //                 debug!("Found node ref to {node_name}");
-    //                 if let Ok(tiled) = def.get::<tiledimage>(node_name) {
-    //                     let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-    //                     let path = path.resolve_embed(&filename)?;
-    //                     res.base_color_texture = Some(loader.load(&path));
-    //                     debug!("Loaded base color texture {path}");
-    //                 }
-    //             }
-    //             _ => {}
-    //         },
-    //         Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //         Err(e) => return Err(MaterialError::from(e)),
-    //     }
-    // }
+    fn file(
+        mut self,
+        f: impl FnOnce(&mut StandardMaterial, bevy_asset::Handle<bevy_image::Image>) + 'static,
+    ) -> Self {
+        self.file_handler = Some(Box::new(f));
+        self
+    }
 
-    // #[cfg(feature = "bevy/pbr_multi_layer_material_textures")]
-    // {
-    //     match surface.get::<Input>("coat_roughness".into()) {
-    //         Ok(input) => match input.data {
-    //             InputData::NodeReference { node_name } => {
-    //                 debug!("Found node ref to {node_name}");
-    //                 if let Ok(tiled) = def.get::<tiledimage>(node_name) {
-    //                     let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-    //                     let path = path.resolve_embed(&filename)?;
-    //                     res.clearcoat_roughness_texture = Some(loader.load(&path));
-    //                     debug!("Loaded coat_roughness texture {path}");
-    //                 }
-    //             }
-    //             _ => {}
-    //         },
-    //         Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //         Err(e) => return Err(MaterialError::from(e)),
-    //     }
-    // }
-
-    // {
-    //     match surface.get::<Input>("normal".into()) {
-    //         Ok(input) => match input.data {
-    //             InputData::NodeReference { node_name } => {
-    //                 debug!("Found node ref to {node_name}");
-    //                 if let Ok(normal) = def.get::<normalmap>(node_name) {
-    //                     let input = normal.r#in.nodename.ok_or(AccessError::InputMissingValue {
-    //                         name: "nodename".into(),
-    //                     })?;
-
-    //                     if let Ok(tiled) = def.get::<tiledimage>(input) {
-    //                         let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-    //                         let path = path.resolve_embed(&filename)?;
-    //                         res.normal_map_texture = Some(loader.load(&path));
-    //                         res.normal_map_channel = UvChannel::Uv0;
-    //                         debug!("Loaded normal texture {path}");
-    //                     }
-    //                 }
-    //             }
-    //             _ => {}
-    //         },
-    //         Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //         Err(e) => return Err(MaterialError::from(e)),
-    //     }
-    // }
-
-    // {
-    //     // .surface.specular_roughness --[name]-> .tiledimage[name=name].input[name="file"][value]
-    //     match surface.get::<Input>("specular_roughness".into()) {
-    //         Ok(input) => match input.data {
-    //             InputData::NodeReference { node_name } => {
-    //                 if let Ok(tiled) = def.get::<tiledimage>(node_name) {
-    //                     let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-    //                     let path = path.resolve_embed(&filename)?;
-    //                     res.metallic_roughness_texture = Some(loader.load(&path));
-    //                     debug!("Loaded metallic_roughness_texture texture {path}");
-    //                 }
-    //             }
-    //             _ => {}
-    //         },
-    //         Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //         Err(e) => return Err(MaterialError::from(e)),
-    //     }
-    // }
-
-    // {
-    // FIXME: Convert displacement to parallax mapping
-
-    // match material.get::<Input>("displacementshader".into()) {
-    //     Ok(input) => match input.data {
-    //         InputData::NodeReference { node_name } => {
-    //             debug!("Found node ref to {node_name}");
-    //             if let Ok(normal) = def.get::<displacement>(node_name) {
-    //                 let input = normal
-    //                     .get::<Element>("displacement".into())?
-    //                     .attr("nodename")?;
-
-    //                 if let Ok(tiled) = def.get::<tiledimage>(input) {
-    //                     let filename = tiled.get::<Element>("file".into())?.attr("value")?;
-    //                     let path = path.resolve_embed(&filename)?;
-    //                     res.depth_map = Some(loader.load(&path));
-    //                     debug!("Loaded displacement {path}");
-    //                 }
-    //             }
-    //         }
-    //         _ => {}
-    //     },
-    //     Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //     Err(e) => return Err(MaterialError::from(e)),
-    // }
-    // }
-
-    // match def.resolve_input::<f32>(surface, None, "base".into()) {
-    //     Ok(x) => res.diffuse_transmission = 1.0 - x,
-    //     Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //     Err(e) => return Err(MaterialError::from(e)),
-    // }
-
-    // macro_rules! set {
-    //     ($field:ident, $input:expr) => {
-    //         match def.resolve_input(&surface, None, $input.into()) {
-    //             Ok(x) => res.$field = x,
-    //             Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
-    //             Err(e) => return Err(MaterialError::from(e)),
-    //         }
-    //     };
-    // }
-
-    // set!(emissive, "emissive");
-    // set!(perceptual_roughness, "specular_roughness");
-    // set!(metallic, "metalness");
-    // set!(reflectance, "specular");
-    // set!(ior, "specular_IOR");
-
-    // set!(clearcoat, "coat"); // maybe needs converting
-    // set!(clearcoat_perceptual_roughness, "coat_roughness");
-
-    debug!(material=?res, "new material");
-
-    Ok(res)
+    fn value(
+        mut self,
+        f: impl FnOnce(&mut StandardMaterial, DataTypeAndValue) -> Result<(), MaterialError> + 'static,
+    ) -> Self {
+        self.value_handler = Some(Box::new(f));
+        self
+    }
 }
 
 fn resolve_input(
@@ -292,7 +202,6 @@ fn resolve_input(
     match el.get::<Input>(field.clone()) {
         Ok(input) => match input.data {
             InputData::NodeReference { node_name } => {
-                debug!("Found node ref to {node_name}");
                 let inner = def.get::<Element>(node_name)?;
                 let value = match inner.tag.as_str() {
                     "tiledimage" => "file",
@@ -322,7 +231,7 @@ fn resolve_input(
             }
             e => Err(ResolveError::UnexpectedInput(e)),
         },
-        // Err(AccessError::NotFound { .. }) | Err(AccessError::Unimplemented(..)) => {}
+        Err(AccessError::NotFound { name, parent }) => Err(ResolveError::NotFound { name, parent }),
         Err(e) => Err(ResolveError::Inner {
             element: el.name.clone(),
             field,
@@ -333,6 +242,8 @@ fn resolve_input(
 
 #[derive(Debug, thiserror::Error)]
 pub enum ResolveError {
+    #[error("No element found with name `{name}` (in `{parent}`)")]
+    NotFound { name: SmolStr, parent: SmolStr },
     #[error("Failed to resolve {element}.{field}: {source}")]
     Inner {
         element: SmolStr,
@@ -360,13 +271,9 @@ pub enum MaterialError {
 
 wrap_node!(surfacematerial);
 wrap_node!(standard_surface);
-// wrap_node!(tiledimage);
-// wrap_node!(normalmap);
-// wrap_node!(displacement);
-
-node!(tiledimage((r#in: T, scale: T) => T));
+node!(tiledimage((file: T, uvtiling: T) => T));
 node!(normalmap((r#in: T, scale: T) => T));
-node!(displacement((r#in: T, scale: T) => T));
+node!(displacement((displacement: T, scale: T) => T));
 
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
