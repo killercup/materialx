@@ -9,6 +9,7 @@ pub struct Input {
     pub data: InputData,
     pub output: Option<SmolStr>,
     pub color_space: Option<SmolStr>,
+    pub nodename: Option<SmolStr>,
 }
 
 impl Node for Input {
@@ -24,6 +25,7 @@ impl Node for Input {
             data,
             output: element.attr("output").ok(),
             color_space: element.attr("colorspace").ok(),
+            nodename: element.attr("nodename").ok(),
         })
     }
 }
