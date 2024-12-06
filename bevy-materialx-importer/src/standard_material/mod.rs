@@ -7,7 +7,7 @@ use materialx_parser::{
     data_types::{DataTypeAndValue, ValueParseError},
     node,
     nodes::{AccessError, InputData},
-    wrap_node, GetAllByType, GetByTypeAndName as _, Input, MaterialX,
+    wrap_node, GetAllByType, GetByTypeAndName, Input, MaterialX,
 };
 use smol_str::SmolStr;
 use tracing::{debug, instrument, trace, warn};
@@ -193,18 +193,27 @@ impl Setter {
     }
 }
 
+#[instrument(level="trace", skip_all, fields(%el.name, field))]
 fn resolve_input(
-    def: &MaterialX,
+    def: impl GetByTypeAndName,
     el: &Element,
     field: impl Into<SmolStr>,
 ) -> Result<DataTypeAndValue, ResolveError> {
     let field = field.into();
     match el.get::<Input>(field.clone()) {
         Ok(input) => match input.data {
+            InputData::OutputReference { nodegraph, output } => {
+                let graph = def.get::<Element>(nodegraph)?;
+                resolve_input(&graph, &graph, output).map_err(|e| ResolveError::Inner {
+                    element: el.name.clone(),
+                    field,
+                    source: Box::new(e),
+                })
+            }
             InputData::NodeReference { node_name } => {
                 let inner = def.get::<Element>(node_name)?;
                 let value = match inner.tag.as_str() {
-                    "tiledimage" => "file",
+                    "tiledimage" | "image" => "file",
                     "normalmap" => "in",
                     "displacement" => "displacement",
                     _ => {

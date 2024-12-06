@@ -13,6 +13,15 @@ pub trait GetByTypeAndName {
         T: Node;
 }
 
+impl<I: GetByTypeAndName> GetByTypeAndName for &I {
+    fn get<T>(&self, name: SmolStr) -> Result<T, AccessError>
+    where
+        T: Node,
+    {
+        I::get::<T>(self, name)
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 #[non_exhaustive]
 pub enum AccessError {
