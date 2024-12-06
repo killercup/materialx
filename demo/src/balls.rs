@@ -50,11 +50,10 @@ struct Meshes {
 }
 
 fn insert_sphere_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
+    let asset = SphereMeshBuilder::new(0.3, SphereKind::Ico { subdivisions: 42 });
+    let mesh = asset.build().with_generated_tangents().unwrap();
     commands.insert_resource(Meshes {
-        ball: meshes.add(SphereMeshBuilder::new(
-            0.3,
-            SphereKind::Ico { subdivisions: 42 },
-        )),
+        ball: meshes.add(mesh),
     });
 }
 
