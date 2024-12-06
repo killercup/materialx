@@ -149,6 +149,14 @@ fn spawn_balls(
                     let click_event: &Pointer<Click> = trigger.event();
                     events.send(SelectedBall(click_event.target));
                 },
+            )
+            .observe(
+                |trigger: Trigger<Pointer<Drag>>, mut e: Query<&mut Transform>| {
+                    if let Ok(mut transform) = e.get_mut(trigger.event().target) {
+                        transform.rotate_y(trigger.delta.x / 200.);
+                        transform.rotate_x(trigger.delta.y / 200.);
+                    }
+                },
             );
     }
 }
